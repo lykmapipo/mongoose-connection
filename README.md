@@ -2,7 +2,8 @@
 
 [![Build Status](https://travis-ci.org/lykmapipo/mongoose-connection.svg?branch=master)](https://travis-ci.org/lykmapipo/mongoose-connection)
 [![Dependency Status](https://img.shields.io/david/lykmapipo/mongoose-connection.svg?style=flat)](https://david-dm.org/lykmapipo/mongoose-connection)
-[![npm version](https://badge.fury.io/js/mongoose-connection.svg)](https://badge.fury.io/js/mongoose-connection)
+[![npm version](https://badge.fury.io/js/%40lykmapipo%2Fmongoose-connection.svg)](https://badge.fury.io/js/@lykmapipo/mongoose-connection)
+
 
 simplified mongoose connection setup. 
  
