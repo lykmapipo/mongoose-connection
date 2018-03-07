@@ -27,9 +27,7 @@ const mongoose = require('@lykmapipo/mongoose-connection');
 
 mongoose.loadModels();
 
-mongoose.open(uri, options, function(error){
-	...handle error
-});
+mongoose.open(uri);
 
 ```
 
