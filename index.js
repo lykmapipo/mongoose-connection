@@ -26,7 +26,9 @@ const _ = require('lodash');
 const parse = require('muri');
 const build = require('mongo-uri-builder');
 const load = require('require-all');
+const traverse = require('traverse');
 const mongoose = require('mongoose');
+const Model = mongoose.Model;
 
 
 //setups
@@ -127,18 +129,26 @@ mongoose.loadModels = function (optns) {
     .suffix;
   options.recursive = options.recursive || defaults.recursive;
 
+
   //load models recuresively
-  const modules = _.map(options.path, function (modelsPath) {
+  let models = _.map(options.path, function (modelsPath) {
     const loadOptions = {
       dirname: path.resolve(options.cwd, modelsPath),
-      filter: new RegExp(`(.+${options.suffix})\.js`),
-      excludeDirs: new RegExp(`^\.|${options.exclude.join('|^')}`),
-      recursive: options.recursive
+      filter: new RegExp(`(.+${options.suffix})\\.js$`),
+      excludeDirs: new RegExp(`^\\.|${options.exclude.join('|^')}$`),
     };
     return load(loadOptions);
   });
 
-  return _.filter(modules, function (modul) { return !_.isEmpty(modul); });
+  models = traverse(models).reduce(function (accumulator, leaf) {
+    if (leaf.prototype instanceof Model) {
+      accumulator.push(leaf);
+    }
+    return accumulator;
+  }, []);
+  models = _.uniqBy(models, 'modelName');
+
+  return models;
 
 };
 
@@ -203,7 +213,6 @@ mongoose.open = function (mongodbUri, optns, done) {
   return mongoose.createConnection(uri, options.options, callback);
 
 };
-
 
 
 module.exports = exports = mongoose;

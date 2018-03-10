@@ -5,7 +5,7 @@
 [![npm version](https://badge.fury.io/js/%40lykmapipo%2Fmongoose-connection.svg)](https://badge.fury.io/js/@lykmapipo/mongoose-connection)
 
 
-simplified mongoose connection setup. 
+simplified mongoose connection setup and model loading. 
  
 It parse `process.env.MONGODB_URI` or `process.env.MONGODB_URL` to obtain 
 connection options if none specified.
@@ -41,6 +41,47 @@ Options
 or `process.env.MONGODB_URL`
 - `options:Object` - valid mongoose connection options
 - `done:Function` - a callback to invoke on success or error
+
+Examples
+```js
+mongoose.open();
+
+...
+
+mongoose.open('mongodb://localhost/test');
+
+...
+
+mongoose.open({
+  username: 'user',
+  password: 'pass',
+  host: 'localhost',
+  port: 27017,
+  database: 'test'
+});
+
+```
+
+
+### `loadModels([options:Object])`
+Perform recursive loading of mongoose model(s) based on specified options. 
+Best to be called during application `setup or boot phase`.
+
+Options
+- `cwd:String` - currect working directory. Default to 'process.cwd()'. Used as 
+root path to resolve 'valid mongoose model' to load.
+- `path:String|[String]` - path or collection of path `relative` to `cwd` where
+valid mongoose model definition resides. Default to `process.cwd()`
+- `suffix:String` - model file name suffix. Default to `_model` e.g `user_model.js`
+
+Examples
+```js
+mongoose.loadModels({ path: './models' });
+
+...
+
+mongoose.loadModels({ path: ['./feature/product', './feature/payment'] });
+```
 
 
 ## Testing

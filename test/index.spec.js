@@ -13,6 +13,14 @@ const mongoose = require(path.join(__dirname, '..'));
 
 describe('parse', function () {
 
+  afterEach(function (done) {
+    if (mongoose.connection) {
+      mongoose.connection.close(done);
+    } else {
+      done();
+    }
+  });
+
   it('should be a function', function () {
     expect(mongoose.parseUri).to.exist;
     expect(mongoose.parseUri).to.be.a('function');
