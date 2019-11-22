@@ -1,4 +1,4 @@
-# mongoose-connection
+# mongoose-connection(DEPRECATED) Use [https://github.com/lykmapipo/mongoose-common](https://github.com/lykmapipo/mongoose-common)
 
 [![Build Status](https://travis-ci.org/lykmapipo/mongoose-connection.svg?branch=master)](https://travis-ci.org/lykmapipo/mongoose-connection)
 [![Dependency Status](https://img.shields.io/david/lykmapipo/mongoose-connection.svg?style=flat)](https://david-dm.org/lykmapipo/mongoose-connection)
