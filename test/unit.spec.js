@@ -17,6 +17,7 @@ import {
   model,
   createSubSchema,
   createSchema,
+  createModel,
 } from '../src/index';
 
 describe('unit', () => {
@@ -245,5 +246,30 @@ describe('unit', () => {
     expect(isSchema(schema)).to.be.true;
     expect(schema.path('name')).to.exist;
     expect(schema.statics.withTest).to.exist.and.to.be.a('function');
+  });
+
+  it('should create model', () => {
+    const modelName = faker.random.uuid();
+    const User = createModel({ name: { type: String } }, { modelName });
+    expect(User).to.exist;
+    expect(User.modelName).to.exist.and.be.equal(modelName);
+    expect(User.base).to.exist;
+    // expect(User.path('name')).to.exist;
+  });
+
+  it('should create model with plugins', () => {
+    const modelName = faker.random.uuid();
+    const User = createModel(
+      { name: { type: String } },
+      { modelName },
+      (def) => {
+        def.static('withTest', function withTest() {});
+      }
+    );
+    expect(User).to.exist;
+    expect(User.modelName).to.exist.and.be.equal(modelName);
+    expect(User.base).to.exist;
+    // expect(User.path('name')).to.exist;
+    expect(User.withTest).to.exist.and.to.be.a('function');
   });
 });

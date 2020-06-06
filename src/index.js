@@ -1,5 +1,14 @@
-import { forEach, get, isNull, includes, isFunction, isString } from 'lodash';
-import { mergeObjects, sortedUniq } from '@lykmapipo/common';
+import {
+  find,
+  filter,
+  forEach,
+  get,
+  isNull,
+  includes,
+  isFunction,
+  isString,
+} from 'lodash';
+import { compact, mergeObjects, sortedUniq } from '@lykmapipo/common';
 import mongoose from 'mongoose';
 
 /**
@@ -424,4 +433,63 @@ export const createSchema = (definition, optns, ...plugins) => {
 
   // return created schema
   return schema;
+};
+
+/**
+ * @function createModel
+ * @name createModel
+ * @description Create schema with sensible default options and plugins
+ * @param {object} schema valid model schema definition
+ * @param {object} options valid model schema options
+ * @param {string} options.modelName valid model name
+ * @param {object} [connection] valid connection. If not
+ * provided default connection will be used.
+ * @param {...Function} [plugins] list of valid plugins to apply
+ * @returns {object} valid model instance
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * createModel({ name: { type: String } }, { modelName: 'User' });
+ * // => User{ ... }
+ *
+ * createModel({ name: { type: String } }, { modelName: 'User' }, autopopulate);
+ * // => User{ ... }
+ */
+export const createModel = (schema, options, connection, ...plugins) => {
+  // ensure model schema definition
+  const schemaDefinition = mergeObjects(schema);
+
+  // ensure model options with defaults
+  const modelOptions = mergeObjects(options, SCHEMA_OPTIONS);
+
+  // obtain connection if provided
+  const localConnection = find([connection, ...plugins], (plugin) => {
+    return isConnection(plugin);
+  });
+
+  // ensure valid plugins
+  const allowedPlugins = compact(
+    filter([connection, ...plugins], (plugin) => {
+      return !isConnection(plugin);
+    })
+  );
+
+  // create model schema
+  const modelSchema = createSchema(
+    schemaDefinition,
+    modelOptions,
+    ...allowedPlugins // TODO: plugin common global plugins
+  );
+
+  // register model
+  const { modelName } = modelOptions;
+  const registeredModel = model(modelName, modelSchema, localConnection);
+
+  // return registered model
+  return registeredModel;
 };
