@@ -1,4 +1,4 @@
-import { get, isNull, isFunction } from 'lodash';
+import { get, isNull, includes, isFunction, isString } from 'lodash';
 import mongoose from 'mongoose';
 
 /**
@@ -254,4 +254,64 @@ export const isInstance = (instance) => {
     return isValidInstance;
   }
   return false;
+};
+
+/**
+ * @function model
+ * @name model
+ * @description Obtain existing or register new model safely
+ * @param {string} [modelName] valid model name
+ * @param {object} [schema] valid schema instance
+ * @param {object} [connection] valid database connection. If not provided
+ * default connection will be used.
+ * @returns {object|undefined} model or undefined
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * model('User');
+ * // => User{ ... }
+ *
+ * model('User', schema);
+ * // => User{ ... }
+ *
+ * model(null)
+ * //=> undefined
+ */
+export const model = (modelName, schema, connection) => {
+  // obtain modelName or random name
+  let localModelName = new mongoose.Types.ObjectId().toString();
+  localModelName = isString(modelName) ? modelName : localModelName;
+
+  // obtain schema
+  const localSchema = isSchema(modelName) ? modelName : schema;
+
+  // ensure connection or use default connection
+  // TODO: refactor getConnection
+  let localConnection = isConnection(modelName) ? modelName : schema;
+  localConnection = isConnection(localConnection)
+    ? localConnection
+    : connection;
+  localConnection = isConnection(localConnection)
+    ? localConnection
+    : mongoose.connection;
+
+  // check if modelName already registered
+  // TODO: refactor modelNames(connection)?
+  const modelExists = includes(localConnection.modelNames(), localModelName);
+
+  // try obtain model or new register model
+  try {
+    const foundModel = modelExists
+      ? localConnection.model(localModelName)
+      : localConnection.model(localModelName, localSchema);
+    return foundModel;
+  } catch (error) {
+    // catch error & return no model
+    return undefined;
+  }
 };

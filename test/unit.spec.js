@@ -13,6 +13,7 @@ import {
   isQuery,
   isAggregate,
   isInstance,
+  model,
 } from '../src/index';
 
 describe('unit', () => {
@@ -152,5 +153,31 @@ describe('unit', () => {
     expect(isInstance(new TestModel())).to.be.true;
     expect(isInstance('123')).to.be.false;
     expect(isInstance()).to.be.false;
+  });
+
+  it('should be able to get or register model silent', () => {
+    expect(model).to.exist;
+    expect(model).to.be.a('function');
+    expect(model.length).to.be.equal(3);
+
+    let User = model('User', new mongoose.Schema({ name: String }));
+    expect(User).to.exist;
+    expect(User.modelName).to.be.equal('User');
+
+    User = model('User');
+    expect(User).to.exist;
+    expect(User.modelName).to.be.equal('User');
+
+    User = model('User', new mongoose.Schema({ name: String }));
+    expect(User).to.exist;
+    expect(User.modelName).to.be.equal('User');
+
+    const Profile = model('Profile');
+    expect(Profile).to.not.exist;
+
+    User = model(new mongoose.Schema({ name: String }));
+    expect(User).to.exist;
+    expect(User.modelName).to.exist;
+    expect(User.modelName).to.not.be.equal('User');
   });
 });
