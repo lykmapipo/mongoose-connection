@@ -83,3 +83,99 @@ export const isConnection = (connection) => {
 export const isConnected = (connection) => {
   return isConnection(connection) && connection.readyState === 1;
 };
+
+/**
+ * @function isSchema
+ * @name isSchema
+ * @description Check value is valid schema instance
+ * @param {object} schema value to check
+ * @returns {boolean} whether value is schema instance
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * isSchema('a');
+ * // => false
+ *
+ * isSchema(schema);
+ * // => true
+ */
+export const isSchema = (schema) => {
+  return schema instanceof mongoose.Schema;
+};
+
+/**
+ * @function isModel
+ * @name isModel
+ * @description Check value is valid model instance
+ * @param {object} model value to check
+ * @returns {boolean} whether value is model instance
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * isModel('a');
+ * // => false
+ *
+ * isModel(model);
+ * // => true
+ */
+export const isModel = (model) => {
+  return model && model.prototype instanceof mongoose.Model;
+};
+
+/**
+ * @function isQuery
+ * @name isQuery
+ * @description Check value is valid query instance
+ * @param {object} query value to check
+ * @returns {boolean} whether value is query instance
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * isQuery('a');
+ * // => false
+ *
+ * isQuery(query);
+ * // => true
+ */
+export const isQuery = (query) => {
+  return query instanceof mongoose.Query;
+};
+
+/**
+ * @function isAggregate
+ * @name isAggregate
+ * @description Check value is valid aggregate instance
+ * @param {object} aggregate value to check
+ * @returns {boolean} whether value is aggregate instance
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * isAggregate('a');
+ * // => false
+ *
+ * isAggregate(null);
+ * // => false
+ */
+export const isAggregate = (aggregate) => {
+  return aggregate instanceof mongoose.Aggregate;
+};
