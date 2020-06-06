@@ -18,6 +18,7 @@ import {
   createSubSchema,
   createSchema,
   createModel,
+  deleteModels,
 } from '../src/index';
 
 describe('unit', () => {
@@ -271,5 +272,19 @@ describe('unit', () => {
     expect(User.base).to.exist;
     // expect(User.path('name')).to.exist;
     expect(User.withTest).to.exist.and.to.be.a('function');
+  });
+
+  it('should delete models', () => {
+    const modelName = faker.random.uuid();
+    const User = createModel({ name: { type: String } }, { modelName });
+    expect(User).to.exist;
+    expect(User.modelName).to.exist.and.be.equal(modelName);
+    expect(User.base).to.exist;
+
+    deleteModels(modelName);
+    expect(model(modelName)).to.not.exist;
+
+    deleteModels(mongoose.connection, modelName);
+    expect(model(modelName)).to.not.exist;
   });
 });

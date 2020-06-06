@@ -304,8 +304,7 @@ export const modelNames = (connection) => {
  * @description Obtain existing or register new model safely
  * @param {string} [modelName] valid model name
  * @param {object} [schema] valid schema instance
- * @param {object} [connection] valid database connection. If not provided
- * default connection will be used.
+ * @param {object} [connection] valid database connection or default
  * @returns {object|undefined} model or undefined
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
@@ -399,7 +398,7 @@ export const createSubSchema = (definition, optns) => {
  * @description Create schema with sensible default options and plugins
  * @param {object} definition valid model schema definition
  * @param {object} [optns] valid schema options
- * @param {...Function} [plugins] list of valid plugin to apply
+ * @param {...Function} [plugins] valid plugins to apply
  * @returns {object} valid schema instance
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
@@ -426,7 +425,7 @@ export const createSchema = (definition, optns, ...plugins) => {
   const schema = new mongoose.Schema(schemaDefinition, schemaOptions);
 
   // apply schema plugins with model options
-  // TODO: plugin jsonSchema, error, seed
+  // TODO: plugin jsonSchema, error, seed, path
   forEach([...plugins], (plugin) => {
     schema.plugin(plugin, schemaOptions);
   });
@@ -436,14 +435,57 @@ export const createSchema = (definition, optns, ...plugins) => {
 };
 
 /**
+ * @function deleteModels
+ * @name deleteModels
+ * @description Safe delete given models
+ * @param {object} [connection] valid connection or default
+ * @param {...string} [models] model names to remove
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * deleteModels('User', 'Invoice');
+ * //=> delete given models
+ *
+ * deleteModels();
+ * //=> remove all models
+ */
+
+export const deleteModels = (connection, ...models) => {
+  // ensure connection
+  let localConnection = find([connection, ...models], (modelName) => {
+    return isConnection(modelName);
+  });
+  localConnection = localConnection || mongoose.connection;
+
+  // ensure valid model names
+  let localModelNames = filter([connection, ...models], (modelName) => {
+    return !isConnection(modelName);
+  });
+  localModelNames = compact(localModelNames);
+
+  // delete each model safely
+  forEach(localModelNames, (modelName) => {
+    try {
+      localConnection.deleteModel(modelName);
+    } catch (error) {
+      /* ignore */
+    }
+  });
+};
+
+/**
  * @function createModel
  * @name createModel
  * @description Create schema with sensible default options and plugins
  * @param {object} schema valid model schema definition
  * @param {object} options valid model schema options
  * @param {string} options.modelName valid model name
- * @param {object} [connection] valid connection. If not
- * provided default connection will be used.
+ * @param {object} [connection] valid connection or default
  * @param {...Function} [plugins] list of valid plugins to apply
  * @returns {object} valid model instance
  * @author lally elias <lallyelias87@gmail.com>
