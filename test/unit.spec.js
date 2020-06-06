@@ -15,6 +15,7 @@ import {
   isInstance,
   modelNames,
   model,
+  createSchema,
 } from '../src/index';
 
 describe('unit', () => {
@@ -209,5 +210,25 @@ describe('unit', () => {
     expect(User).to.exist;
     expect(User.modelName).to.exist;
     expect(User.modelName).to.not.be.equal('User');
+  });
+
+  it('should create schema', () => {
+    const schema = createSchema({ name: { type: String } });
+    expect(schema).to.exist;
+    expect(isSchema(schema)).to.be.true;
+    expect(schema.options._id).to.be.true;
+    expect(schema.options.id).to.be.false;
+    expect(schema.options.timestamps).to.be.true;
+    expect(schema.options.emitIndexErrors).to.be.true;
+  });
+
+  it('should create schema with plugins', () => {
+    const schema = createSchema({ name: { type: String } }, {}, (def) => {
+      def.static('withTest', function withTest() {});
+    });
+    expect(schema).to.exist;
+    expect(isSchema(schema)).to.be.true;
+    expect(schema.path('name')).to.exist;
+    expect(schema.statics.withTest).to.exist.and.to.be.a('function');
   });
 });

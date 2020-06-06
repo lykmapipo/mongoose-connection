@@ -1,5 +1,5 @@
-import { get, isNull, includes, isFunction, isString } from 'lodash';
-import { sortedUniq } from '@lykmapipo/common';
+import { forEach, get, isNull, includes, isFunction, isString } from 'lodash';
+import { mergeObjects, sortedUniq } from '@lykmapipo/common';
 import mongoose from 'mongoose';
 
 /**
@@ -347,4 +347,46 @@ export const model = (modelName, schema, connection) => {
     // catch error & return no model
     return undefined;
   }
+};
+
+/**
+ * @function createSchema
+ * @name createSchema
+ * @description Create schema with sensible default options and plugins
+ * @param {object} definition valid model schema definition
+ * @param {object} [optns] valid schema options
+ * @param {...Function} [plugins] list of valid plugin to apply
+ * @returns {object} valid schema instance
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * createSchema({ name: { type: String } });
+ * // => Schema{ ... }
+ *
+ * createSchema({ name: { type: String } }, { timestamps: false });
+ * // => Schema{ ... }
+ */
+export const createSchema = (definition, optns, ...plugins) => {
+  // ensure schema definition
+  const schemaDefinition = mergeObjects(definition);
+
+  // ensure schema options
+  const schemaOptions = mergeObjects(SCHEMA_OPTIONS, optns);
+
+  // create schema
+  const schema = new mongoose.Schema(schemaDefinition, schemaOptions);
+
+  // apply schema plugins with model options
+  // TODO: plugin jsonSchema, error, seed
+  forEach([...plugins], (plugin) => {
+    schema.plugin(plugin, schemaOptions);
+  });
+
+  // return created schema
+  return schema;
 };
