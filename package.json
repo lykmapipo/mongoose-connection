@@ -86,11 +86,15 @@
     "lodash.template": "^4.5.0",
     "minimist": "^1.2.5",
     "mocha": "^7.2.0",
+    "mongoose": ">=5.9.18",
     "nyc": "^15.1.0",
     "prettier": "^2.0.5",
     "rimraf": "^3.0.2",
     "rollup": "^2.13.1",
     "shelljs": "^0.8.4"
+  },
+  "peerDependencies": {
+    "mongoose": ">=5.9.18"
   },
   "dependencies": {
     "@lykmapipo/common": ">=0.34.2",
