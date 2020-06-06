@@ -2,6 +2,8 @@ import { spy, expect, faker } from '@lykmapipo/test-helpers';
 import mongoose from 'mongoose';
 
 import {
+  SCHEMA_OPTIONS,
+  SUB_SCHEMA_OPTIONS,
   enableDebug,
   disableDebug,
   isConnection,
@@ -28,6 +30,29 @@ describe('unit', () => {
     testAggregate = TestModel.aggregate();
   });
 
+  it('should provide default schema options', () => {
+    expect(SCHEMA_OPTIONS).to.exist;
+    expect(SCHEMA_OPTIONS).to.be.an('object');
+    expect(SCHEMA_OPTIONS).to.be.eql({
+      id: false,
+      timestamps: true,
+      toJSON: { getters: true },
+      toObject: { getters: true },
+      emitIndexErrors: true,
+    });
+  });
+
+  it('should provide default sub schema options', () => {
+    expect(SUB_SCHEMA_OPTIONS).to.exist;
+    expect(SUB_SCHEMA_OPTIONS).to.be.an('object');
+    expect(SUB_SCHEMA_OPTIONS).to.be.eql({
+      _id: false,
+      id: false,
+      timestamps: false,
+      emitIndexErrors: true,
+    });
+  });
+
   it('should enable mongoose degugging', () => {
     expect(enableDebug).to.exist;
     expect(enableDebug).to.be.a('function');
@@ -43,7 +68,7 @@ describe('unit', () => {
     set.restore();
   });
 
-  it('should enable mongoose degugging', () => {
+  it('should disable mongoose degugging', () => {
     expect(disableDebug).to.exist;
     expect(disableDebug).to.be.a('function');
     expect(disableDebug).to.have.length(0);

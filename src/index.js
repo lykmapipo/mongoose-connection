@@ -2,6 +2,51 @@ import { get, isNull, isFunction } from 'lodash';
 import mongoose from 'mongoose';
 
 /**
+ * @name SCHEMA_OPTIONS
+ * @constant SCHEMA_OPTIONS
+ * @description Common options to set on schema
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.1.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * import { SCHEMA_OPTIONS } from '@lykmapipo/mongoose-connection';
+ * //=> { timestamps: true, ... }
+ */
+export const SCHEMA_OPTIONS = {
+  id: false,
+  timestamps: true,
+  toJSON: { getters: true },
+  toObject: { getters: true },
+  emitIndexErrors: true,
+};
+
+/**
+ * @name SUB_SCHEMA_OPTIONS
+ * @constant SUB_SCHEMA_OPTIONS
+ * @description Common options to set on sub doc schema
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.1.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * import { SUB_SCHEMA_OPTIONS } from '@lykmapipo/mongoose-connection';
+ * //=> { timestamps: false, ... }
+ */
+export const SUB_SCHEMA_OPTIONS = {
+  _id: false,
+  id: false,
+  timestamps: false,
+  emitIndexErrors: true,
+};
+
+/**
  * @function enableDebug
  * @name enableDebug
  * @description Enable internal debug option
