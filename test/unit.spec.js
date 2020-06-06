@@ -15,6 +15,7 @@ import {
   isInstance,
   modelNames,
   model,
+  createSubSchema,
   createSchema,
 } from '../src/index';
 
@@ -212,8 +213,20 @@ describe('unit', () => {
     expect(User.modelName).to.not.be.equal('User');
   });
 
+  it('should create sub schema', () => {
+    const subSchema = createSubSchema({ name: { type: String } });
+
+    expect(subSchema).to.exist;
+    expect(isSchema(subSchema)).to.be.true;
+    expect(subSchema.options._id).to.be.false;
+    expect(subSchema.options.id).to.be.false;
+    expect(subSchema.options.timestamps).to.be.false;
+    expect(subSchema.options.emitIndexErrors).to.be.true;
+  });
+
   it('should create schema', () => {
     const schema = createSchema({ name: { type: String } });
+
     expect(schema).to.exist;
     expect(isSchema(schema)).to.be.true;
     expect(schema.options._id).to.be.true;
@@ -226,7 +239,9 @@ describe('unit', () => {
     const schema = createSchema({ name: { type: String } }, {}, (def) => {
       def.static('withTest', function withTest() {});
     });
+
     expect(schema).to.exist;
+    expect(schema.base).to.exist;
     expect(isSchema(schema)).to.be.true;
     expect(schema.path('name')).to.exist;
     expect(schema.statics.withTest).to.exist.and.to.be.a('function');

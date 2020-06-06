@@ -350,6 +350,41 @@ export const model = (modelName, schema, connection) => {
 };
 
 /**
+ * @function createSubSchema
+ * @name createSubSchema
+ * @description Create sub schema with sensible defaults
+ * @param {object} definition valid sub schema definition
+ * @param {object} [optns] valid schema options
+ * @returns {object} valid sub schema instance
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * createSubSchema({ name: { type: String } });
+ * // => Schema{ ... }
+ *
+ * createSubSchema({ name: { type: String } }, { timestamps: true });
+ * // => Schema{ ... }
+ */
+export const createSubSchema = (definition, optns) => {
+  // ensure sub schema definition
+  const schemaDefinition = mergeObjects(definition);
+
+  // ensure sub schema options
+  const schemaOptions = mergeObjects(SUB_SCHEMA_OPTIONS, optns);
+
+  // create sub schema
+  const subSchema = new mongoose.Schema(schemaDefinition, schemaOptions);
+
+  // return created sub schema
+  return subSchema;
+};
+
+/**
  * @function createSchema
  * @name createSchema
  * @description Create schema with sensible default options and plugins
