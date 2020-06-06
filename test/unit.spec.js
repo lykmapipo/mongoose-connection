@@ -10,21 +10,22 @@ import {
   isModel,
   isQuery,
   isAggregate,
+  isInstance,
 } from '../src/index';
 
 describe('unit', () => {
   let testModelName;
   let testSchema;
-  let testModel;
+  let TestModel;
   let testQuery;
   let testAggregate;
 
   beforeEach(() => {
     testModelName = faker.random.uuid();
     testSchema = new mongoose.Schema({ name: String });
-    testModel = mongoose.model(testModelName, testSchema);
-    testQuery = testModel.find();
-    testAggregate = testModel.aggregate();
+    TestModel = mongoose.model(testModelName, testSchema);
+    testQuery = TestModel.find();
+    testAggregate = TestModel.aggregate();
   });
 
   it('should enable mongoose degugging', () => {
@@ -64,6 +65,7 @@ describe('unit', () => {
 
     expect(isConnection(new mongoose.Connection())).to.be.true;
     expect(isConnection('123')).to.be.false;
+    expect(isConnection()).to.be.false;
   });
 
   it('should check if connected', () => {
@@ -71,9 +73,9 @@ describe('unit', () => {
     expect(isConnected).to.be.a('function');
     expect(isConnected).to.have.length(1);
 
-    expect(isConnected()).to.be.false;
     expect(isConnected(new mongoose.Connection())).to.be.false;
     expect(isConnected('123')).to.be.false;
+    expect(isConnected()).to.be.false;
   });
 
   it('should check if value is Schema', () => {
@@ -83,6 +85,7 @@ describe('unit', () => {
 
     expect(isSchema(testSchema)).to.be.true;
     expect(isSchema('123')).to.be.false;
+    expect(isSchema()).to.be.false;
   });
 
   it('should check if value is Model', () => {
@@ -90,9 +93,10 @@ describe('unit', () => {
     expect(isModel).to.be.a('function');
     expect(isModel).to.have.length(1);
 
-    expect(isModel(testModel)).to.be.true;
+    expect(isModel(TestModel)).to.be.true;
     expect(isModel(testSchema)).to.be.false;
     expect(isModel('123')).to.be.false;
+    expect(isModel()).to.be.false;
   });
 
   it('should check if value is Query', () => {
@@ -101,7 +105,8 @@ describe('unit', () => {
     expect(isQuery).to.have.length(1);
 
     expect(isQuery(testQuery)).to.be.true;
-    expect(isQuery('124')).to.be.false;
+    expect(isQuery('123')).to.be.false;
+    expect(isQuery()).to.be.false;
   });
 
   it('should check if value is Aggregate', () => {
@@ -110,6 +115,17 @@ describe('unit', () => {
     expect(isAggregate).to.have.length(1);
 
     expect(isAggregate(testAggregate)).to.be.true;
-    expect(isAggregate('124')).to.be.false;
+    expect(isAggregate('123')).to.be.false;
+    expect(isAggregate()).to.be.false;
+  });
+
+  it('should check if value is a model instance', () => {
+    expect(isInstance).to.exist;
+    expect(isInstance).to.be.a('function');
+    expect(isInstance).to.have.length(1);
+
+    expect(isInstance(new TestModel())).to.be.true;
+    expect(isInstance('123')).to.be.false;
+    expect(isInstance()).to.be.false;
   });
 });

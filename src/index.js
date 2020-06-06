@@ -1,3 +1,4 @@
+import { get, isNull, isFunction } from 'lodash';
 import mongoose from 'mongoose';
 
 /**
@@ -111,7 +112,7 @@ export const isSchema = (schema) => {
 /**
  * @function isModel
  * @name isModel
- * @description Check value is valid model instance
+ * @description Check value is valid model
  * @param {object} model value to check
  * @returns {boolean} whether value is model instance
  * @author lally elias <lallyelias87@gmail.com>
@@ -129,7 +130,7 @@ export const isSchema = (schema) => {
  * // => true
  */
 export const isModel = (model) => {
-  return model && model.prototype instanceof mongoose.Model;
+  return !!model && model.prototype instanceof mongoose.Model;
 };
 
 /**
@@ -173,9 +174,39 @@ export const isQuery = (query) => {
  * isAggregate('a');
  * // => false
  *
- * isAggregate(null);
- * // => false
+ * isAggregate(aggregate);
+ * // => true
  */
 export const isAggregate = (aggregate) => {
   return aggregate instanceof mongoose.Aggregate;
+};
+
+/**
+ * @function isInstance
+ * @name isInstance
+ * @description Check value is valid model instance
+ * @param {object} instance value to check
+ * @returns {boolean} whether value is model instance
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * isInstance('a');
+ * // => false
+ *
+ * isInstance(instance);
+ * // => true
+ */
+export const isInstance = (instance) => {
+  if (instance) {
+    const isValidInstance =
+      isFunction(get(instance, 'toObject', null)) &&
+      !isNull(get(instance, '$__', null));
+    return isValidInstance;
+  }
+  return false;
 };
