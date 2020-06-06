@@ -1,4 +1,4 @@
-import { spy, expect, faker } from '@lykmapipo/test-helpers';
+import { mock, spy, expect, faker } from '@lykmapipo/test-helpers';
 import mongoose from 'mongoose';
 
 import {
@@ -19,6 +19,7 @@ import {
   createSchema,
   createModel,
   deleteModels,
+  connect,
 } from '../src/index';
 
 describe('unit', () => {
@@ -286,5 +287,91 @@ describe('unit', () => {
 
     deleteModels(mongoose.connection, modelName);
     expect(model(modelName)).to.not.exist;
+  });
+
+  it('should connect successfully', (done) => {
+    expect(connect).to.exist;
+    expect(connect).to.be.a('function');
+    expect(connect.length).to.be.equal(2);
+
+    const mockoose = mock(mongoose);
+    const open = mockoose.expects('connect').yields(null, mongoose);
+
+    connect((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.exist;
+      expect(open).to.have.been.calledOnce;
+      expect(open).to.have.been.calledWith(
+        'mongodb://localhost/mongoose-connection-test'
+      );
+
+      done(error, instance);
+    });
+  });
+
+  it('should connect use given url', (done) => {
+    const MONGODB_URI = 'mongodb://localhost/test';
+
+    const mockoose = mock(mongoose);
+    const open = mockoose.expects('connect').yields(null, mongoose);
+
+    connect(MONGODB_URI, (error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.exist;
+      expect(open).to.have.been.calledOnce;
+      expect(open).to.have.been.calledWith(MONGODB_URI);
+
+      done(error, instance);
+    });
+  });
+
+  it('should connect use process.env.MONGODB_URI', (done) => {
+    const MONGODB_URI = 'mongodb://localhost/test';
+    process.env.MONGODB_URI = MONGODB_URI;
+
+    const mockoose = mock(mongoose);
+    const open = mockoose.expects('connect').yields(null, mongoose);
+
+    connect((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.exist;
+      expect(open).to.have.been.calledOnce;
+      expect(open).to.have.been.calledWith(MONGODB_URI);
+      delete process.env.MONGODB_URI;
+
+      done(error, instance);
+    });
+  });
+
+  it('should handle connect error', (done) => {
+    expect(connect).to.exist;
+    expect(connect).to.be.a('function');
+    expect(connect.length).to.be.equal(2);
+
+    const mockoose = mock(mongoose);
+    const open = mockoose.expects('connect').yields(new Error('Failed'));
+
+    connect((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+
+      expect(error).to.exist;
+      expect(instance).to.not.exist;
+      expect(open).to.have.been.calledOnce;
+      expect(open).to.have.been.calledWith(
+        'mongodb://localhost/mongoose-connection-test'
+      );
+
+      done();
+    });
   });
 });

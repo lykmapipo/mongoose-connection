@@ -7,8 +7,14 @@ import {
   includes,
   isFunction,
   isString,
+  kebabCase,
+  last,
+  split,
+  toLower,
+  trim,
 } from 'lodash';
-import { compact, mergeObjects, sortedUniq } from '@lykmapipo/common';
+import { compact, mergeObjects, pkg, sortedUniq } from '@lykmapipo/common';
+import { getString } from '@lykmapipo/env';
 import mongoose from 'mongoose';
 
 /**
@@ -534,4 +540,65 @@ export const createModel = (schema, options, connection, ...plugins) => {
 
   // return registered model
   return registeredModel;
+};
+
+// TODO return default connection
+// TODO return created connection
+// TODO create new connection
+
+/**
+ * @function connect
+ * @name connect
+ * @description Open default mongoose connection
+ * @param {string} [url] valid connection string. If not provided it
+ * will be obtained from process.env.MONGODB_URI or package name prefixed with
+ * current execution environment name
+ * @param {Function} [done] a callback to invoke on success or failure
+ * @returns {object|Error} mongoose instance or error
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * connect((error) => { ... });
+ *
+ * connect(url, (error) => { ... });
+ */
+export const connect = (url, done) => {
+  // obtain current node runtime environment
+  const NODE_ENV = getString('NODE_ENV', 'development');
+
+  // ensure database name using environment and package
+  let DB_NAME = NODE_ENV;
+  try {
+    DB_NAME = get(pkg(), 'name', NODE_ENV);
+    DB_NAME = toLower(last(split(DB_NAME, '/')));
+    DB_NAME = DB_NAME === NODE_ENV ? DB_NAME : `${DB_NAME} ${NODE_ENV}`;
+    DB_NAME = kebabCase(DB_NAME);
+  } catch (error) {
+    /* ignore */
+  }
+  DB_NAME = `mongodb://localhost/${DB_NAME}`;
+
+  // ensure database uri from environment
+  const MONGODB_URI = trim(getString('MONGODB_URI', DB_NAME));
+
+  // normalize arguments
+  let uri = isFunction(url) ? MONGODB_URI : url;
+  const cb = isFunction(url) ? url : done;
+
+  // connection options
+  const options = {
+    useNewUrlParser: true,
+    useFindAndModify: false,
+    useCreateIndex: true,
+    useUnifiedTopology: true,
+  };
+
+  // establish connection
+  uri = trim(uri);
+  return mongoose.connect(uri, options, cb);
 };
