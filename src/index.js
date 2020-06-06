@@ -281,9 +281,9 @@ export const modelNames = (connection) => {
     : mongoose.connection;
 
   // obtain connection models
-  const registeredModelNames = localConnection
-    ? sortedUniq([].concat(localConnection.modelNames()))
-    : [];
+  const registeredModelNames = sortedUniq(
+    [].concat(localConnection.modelNames())
+  );
 
   // return
   return registeredModelNames;

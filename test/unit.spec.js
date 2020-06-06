@@ -164,6 +164,8 @@ describe('unit', () => {
     expect(modelNames).to.be.a('function');
     expect(modelNames).to.have.length(1);
     expect(modelNames()).to.include(modelName);
+    expect(modelNames(mongoose.connection)).to.include(modelName);
+    expect(modelNames(null)).to.include(modelName);
   });
 
   it('should get or register model silent', () => {
@@ -179,7 +181,19 @@ describe('unit', () => {
     expect(User).to.exist;
     expect(User.modelName).to.be.equal('User');
 
+    User = model('User', mongoose.connection);
+    expect(User).to.exist;
+    expect(User.modelName).to.be.equal('User');
+
     User = model('User', new mongoose.Schema({ name: String }));
+    expect(User).to.exist;
+    expect(User.modelName).to.be.equal('User');
+
+    User = model(
+      'User',
+      new mongoose.Schema({ name: String }),
+      mongoose.connection
+    );
     expect(User).to.exist;
     expect(User.modelName).to.be.equal('User');
 
@@ -187,6 +201,11 @@ describe('unit', () => {
     expect(Profile).to.not.exist;
 
     User = model(new mongoose.Schema({ name: String }));
+    expect(User).to.exist;
+    expect(User.modelName).to.exist;
+    expect(User.modelName).to.not.be.equal('User');
+
+    User = model(mongoose.connection, new mongoose.Schema({ name: String }));
     expect(User).to.exist;
     expect(User.modelName).to.exist;
     expect(User.modelName).to.not.be.equal('User');
