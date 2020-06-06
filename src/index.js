@@ -1,4 +1,5 @@
 import { get, isNull, includes, isFunction, isString } from 'lodash';
+import { sortedUniq } from '@lykmapipo/common';
 import mongoose from 'mongoose';
 
 /**
@@ -254,6 +255,38 @@ export const isInstance = (instance) => {
     return isValidInstance;
   }
   return false;
+};
+
+/**
+ * @function modelNames
+ * @name modelNames
+ * @description Obtain registered model names
+ * @param {object} [connection] valid connection
+ * @returns {string[]} set of register model names
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * modelNames();
+ * //=> ['User', ... ]
+ */
+export const modelNames = (connection) => {
+  // ensure connection
+  const localConnection = isConnection(connection)
+    ? connection
+    : mongoose.connection;
+
+  // obtain connection models
+  const registeredModelNames = localConnection
+    ? sortedUniq([].concat(localConnection.modelNames()))
+    : [];
+
+  // return
+  return registeredModelNames;
 };
 
 /**

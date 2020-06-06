@@ -13,6 +13,7 @@ import {
   isQuery,
   isAggregate,
   isInstance,
+  modelNames,
   model,
 } from '../src/index';
 
@@ -155,7 +156,17 @@ describe('unit', () => {
     expect(isInstance()).to.be.false;
   });
 
-  it('should be able to get or register model silent', () => {
+  it('should get registered model names', () => {
+    const modelName = faker.random.uuid();
+    model(modelName, new mongoose.Schema({ name: String }));
+
+    expect(modelNames).to.exist;
+    expect(modelNames).to.be.a('function');
+    expect(modelNames).to.have.length(1);
+    expect(modelNames()).to.include(modelName);
+  });
+
+  it('should get or register model silent', () => {
     expect(model).to.exist;
     expect(model).to.be.a('function');
     expect(model.length).to.be.equal(3);
