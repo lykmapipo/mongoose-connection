@@ -602,3 +602,33 @@ export const connect = (url, done) => {
   uri = trim(uri);
   return mongoose.connect(uri, options, cb);
 };
+
+/**
+ * @function disconnect
+ * @name disconnect
+ * @description Close all connections
+ * @param {object} [connection] valid connection or default
+ * @param {Function} [done] a callback to invoke on success or failure
+ * @returns {null|Error} null or error
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * disconnect((error) => { ... });
+ *
+ */
+export const disconnect = (connection, done) => {
+  // normalize arguments
+  const localConnection = isConnection(connection) ? connection : undefined;
+  const cb = !isConnection(connection) ? connection : done;
+
+  // disconnect
+  if (localConnection) {
+    return localConnection.close(cb);
+  }
+  return mongoose.disconnect(cb);
+};

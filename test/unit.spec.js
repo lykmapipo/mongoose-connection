@@ -20,6 +20,7 @@ import {
   createModel,
   deleteModels,
   connect,
+  disconnect,
 } from '../src/index';
 
 describe('unit', () => {
@@ -370,6 +371,66 @@ describe('unit', () => {
       expect(open).to.have.been.calledWith(
         'mongodb://localhost/mongoose-connection-test'
       );
+
+      done();
+    });
+  });
+
+  it('should disconnect successfully', (done) => {
+    expect(disconnect).to.exist;
+    expect(disconnect).to.be.a('function');
+    expect(disconnect.length).to.be.equal(2);
+
+    const mockoose = mock(mongoose);
+    const close = mockoose.expects('disconnect').yields(null, null);
+
+    disconnect((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.be.equal(null);
+      expect(close).to.have.been.calledOnce;
+
+      done(error, instance);
+    });
+  });
+
+  it('should disconnect specific connection', (done) => {
+    expect(disconnect).to.exist;
+    expect(disconnect).to.be.a('function');
+    expect(disconnect.length).to.be.equal(2);
+
+    const mockoose = mock(mongoose.connection);
+    const close = mockoose.expects('close').yields(null, null);
+
+    disconnect(mongoose.connection, (error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.be.equal(null);
+      expect(close).to.have.been.calledOnce;
+
+      done(error, instance);
+    });
+  });
+
+  it('should handle disconnect error', (done) => {
+    expect(disconnect).to.exist;
+    expect(disconnect).to.be.a('function');
+    expect(disconnect.length).to.be.equal(2);
+
+    const mockoose = mock(mongoose);
+    const close = mockoose.expects('disconnect').yields(new Error('Failed'));
+
+    disconnect((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+
+      expect(error).to.exist;
+      expect(instance).to.not.exist;
+      expect(close).to.have.been.calledOnce;
 
       done();
     });
