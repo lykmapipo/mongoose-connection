@@ -632,3 +632,48 @@ export const disconnect = (connection, done) => {
   }
   return mongoose.disconnect(cb);
 };
+
+/**
+ * @function drop
+ * @name drop
+ * @description Delete the given database, including all collections,
+ * documents, and indexes
+ * @param {object} [connection] valid connection or default
+ * @param {Function} [done] a callback to invoke on success or failure
+ * @returns {null|Error} null or error
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * drop((error) => { ... });
+ *
+ */
+export const drop = (connection, done) => {
+  // normalize arguments
+  const localConnection = isConnection(connection)
+    ? connection
+    : mongoose.connection;
+  const cb = !isConnection(connection) ? connection : done;
+
+  // drop database if connection available
+  let canDrop = isConnected(localConnection);
+  canDrop = canDrop && localConnection.dropDatabase;
+  if (canDrop) {
+    const afterDropDatabase = (error) => {
+      // back-off on error
+      if (error) {
+        return cb(error);
+      }
+      // disconnect
+      return disconnect(localConnection, cb);
+    };
+    return localConnection.dropDatabase(afterDropDatabase);
+  }
+
+  // continue to disconnect
+  return disconnect(localConnection, cb);
+};

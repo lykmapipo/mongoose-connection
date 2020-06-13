@@ -1,4 +1,4 @@
-import { mock, spy, expect, faker } from '@lykmapipo/test-helpers';
+import { mock, spy, stub, expect, faker } from '@lykmapipo/test-helpers';
 import mongoose from 'mongoose';
 
 import {
@@ -21,6 +21,7 @@ import {
   deleteModels,
   connect,
   disconnect,
+  drop,
 } from '../src/index';
 
 describe('unit', () => {
@@ -431,6 +432,98 @@ describe('unit', () => {
       expect(error).to.exist;
       expect(instance).to.not.exist;
       expect(close).to.have.been.calledOnce;
+
+      done();
+    });
+  });
+
+  it('should drop deafult connection', (done) => {
+    expect(drop).to.exist;
+    expect(drop).to.be.a('function');
+    expect(drop.length).to.be.equal(2);
+
+    const readyState = stub(mongoose.connection, 'readyState').value(1);
+    const mockoose = mock(mongoose.connection);
+    const clear = mockoose.expects('dropDatabase').yields(null, null);
+    const close = mockoose.expects('close').yields(null, null);
+
+    drop((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+      readyState.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.not.exist;
+      expect(clear).to.have.been.calledOnce;
+      expect(close).to.have.been.calledOnce;
+
+      done(error, instance);
+    });
+  });
+
+  it('should drop given connection', (done) => {
+    expect(drop).to.exist;
+    expect(drop).to.be.a('function');
+    expect(drop.length).to.be.equal(2);
+
+    const readyState = stub(mongoose.connection, 'readyState').value(1);
+    const mockoose = mock(mongoose.connection);
+    const clear = mockoose.expects('dropDatabase').yields(null, null);
+    const close = mockoose.expects('close').yields(null, null);
+
+    drop(mongoose.connection, (error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+      readyState.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.not.exist;
+      expect(clear).to.have.been.calledOnce;
+      expect(close).to.have.been.calledOnce;
+
+      done(error, instance);
+    });
+  });
+
+  it('should not drop if connection not ready', (done) => {
+    expect(drop).to.exist;
+    expect(drop).to.be.a('function');
+    expect(drop.length).to.be.equal(2);
+
+    const readyState = stub(mongoose.connection, 'readyState').value(0);
+    const mockoose = mock(mongoose.connection);
+    const close = mockoose.expects('close').yields(null, null);
+
+    drop((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+      readyState.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.not.exist;
+      expect(close).to.have.been.calledOnce;
+
+      done(error, instance);
+    });
+  });
+
+  it('should drop error', (done) => {
+    expect(drop).to.exist;
+    expect(drop).to.be.a('function');
+    expect(drop.length).to.be.equal(2);
+
+    const readyState = stub(mongoose.connection, 'readyState').value(1);
+    const mockoose = mock(mongoose.connection);
+    const clear = mockoose.expects('dropDatabase').yields(new Error('Failed'));
+
+    drop((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+      readyState.restore();
+
+      expect(error).to.exist;
+      expect(instance).to.not.exist;
+      expect(clear).to.have.been.calledOnce;
 
       done();
     });
