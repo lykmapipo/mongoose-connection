@@ -1,19 +1,29 @@
 import {
   find,
+  findLast,
   filter,
   forEach,
   get,
+  isEmpty,
   isNull,
   includes,
   isFunction,
   isString,
   kebabCase,
   last,
+  map,
   split,
   toLower,
   trim,
 } from 'lodash';
-import { compact, mergeObjects, pkg, sortedUniq } from '@lykmapipo/common';
+import { waterfall } from 'async';
+import {
+  compact,
+  mergeObjects,
+  pkg,
+  uniq,
+  sortedUniq,
+} from '@lykmapipo/common';
 import { getString } from '@lykmapipo/env';
 import mongoose from 'mongoose';
 
@@ -288,6 +298,9 @@ export const isInstance = (instance) => {
  *
  * modelNames();
  * //=> ['User', ... ]
+ *
+ * modelNames(connection);
+ * //=> ['User', ... ]
  */
 export const modelNames = (connection) => {
   // ensure connection
@@ -472,7 +485,7 @@ export const deleteModels = (connection, ...models) => {
   let localModelNames = filter([connection, ...models], (modelName) => {
     return !isConnection(modelName);
   });
-  localModelNames = compact(localModelNames);
+  localModelNames = sortedUniq([...localModelNames]);
 
   // delete each model safely
   forEach(localModelNames, (modelName) => {
@@ -631,6 +644,86 @@ export const disconnect = (connection, done) => {
     return localConnection.close(cb);
   }
   return mongoose.disconnect(cb);
+};
+
+/**
+ * @function clear
+ * @name clear
+ * @description Clear provided models or all if none give
+ * @param {object} [connection] valid connection or default
+ * @param {...string} [models] model names to remove or default to all
+ * @returns {null|Error} null or error
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * clear(done);
+ * clear('User', done);
+ * clear('User', 'Profile', done);
+ *
+ * clear(connection, done);
+ * clear(connection, 'User', done);
+ *
+ */
+export const clear = (connection, ...models) => {
+  // ensure connection
+  let localConnection = find([connection, ...models], (modelName) => {
+    return isConnection(modelName);
+  });
+  localConnection = localConnection || mongoose.connection;
+
+  // ensure callback
+  const cb = findLast([connection, ...models], (modelName) => {
+    return isFunction(modelName);
+  });
+
+  // ensure valid model names
+  // TODO: preserve model clear order
+  // TODO: prevent double clear from model instance & modelName
+  let localModelNames = filter([connection, ...models], (modelName) => {
+    return isString(modelName) || isModel(modelName);
+  });
+  localModelNames = uniq([...localModelNames]);
+
+  // user all models is non provided
+  if (isEmpty(localModelNames)) {
+    localModelNames = uniq([...localModelNames, ...modelNames()]);
+  }
+
+  // ensure connection
+  const connected = isConnected(localConnection);
+
+  // clear model
+  const clearModel = (modelName) => {
+    // obtain model
+    const Model = isModel(modelName)
+      ? modelName
+      : model(modelName, localConnection);
+
+    // prepare cleaner
+    if (connected && Model && isFunction(Model.deleteMany)) {
+      const clearModelData = (next) => {
+        return Model.deleteMany((error) => {
+          return next(error);
+        });
+      };
+      return clearModelData;
+    }
+
+    // do nothing
+    return undefined;
+  };
+
+  // map modelNames to Model.deleteMany
+  let deletes = map([...localModelNames], clearModel);
+  deletes = compact([...deletes]);
+
+  // run deletes
+  return waterfall(deletes, cb);
 };
 
 /**

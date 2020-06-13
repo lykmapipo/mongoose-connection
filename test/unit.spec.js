@@ -21,6 +21,7 @@ import {
   deleteModels,
   connect,
   disconnect,
+  clear,
   drop,
 } from '../src/index';
 
@@ -437,14 +438,14 @@ describe('unit', () => {
     });
   });
 
-  it('should drop deafult connection', (done) => {
+  it('should drop default connection', (done) => {
     expect(drop).to.exist;
     expect(drop).to.be.a('function');
     expect(drop.length).to.be.equal(2);
 
     const readyState = stub(mongoose.connection, 'readyState').value(1);
     const mockoose = mock(mongoose.connection);
-    const clear = mockoose.expects('dropDatabase').yields(null, null);
+    const dropDb = mockoose.expects('dropDatabase').yields(null, null);
     const close = mockoose.expects('close').yields(null, null);
 
     drop((error, instance) => {
@@ -454,7 +455,7 @@ describe('unit', () => {
 
       expect(error).to.not.exist;
       expect(instance).to.not.exist;
-      expect(clear).to.have.been.calledOnce;
+      expect(dropDb).to.have.been.calledOnce;
       expect(close).to.have.been.calledOnce;
 
       done(error, instance);
@@ -468,7 +469,7 @@ describe('unit', () => {
 
     const readyState = stub(mongoose.connection, 'readyState').value(1);
     const mockoose = mock(mongoose.connection);
-    const clear = mockoose.expects('dropDatabase').yields(null, null);
+    const dropDb = mockoose.expects('dropDatabase').yields(null, null);
     const close = mockoose.expects('close').yields(null, null);
 
     drop(mongoose.connection, (error, instance) => {
@@ -478,7 +479,7 @@ describe('unit', () => {
 
       expect(error).to.not.exist;
       expect(instance).to.not.exist;
-      expect(clear).to.have.been.calledOnce;
+      expect(dropDb).to.have.been.calledOnce;
       expect(close).to.have.been.calledOnce;
 
       done(error, instance);
@@ -507,14 +508,14 @@ describe('unit', () => {
     });
   });
 
-  it('should drop error', (done) => {
+  it('should handle drop error', (done) => {
     expect(drop).to.exist;
     expect(drop).to.be.a('function');
     expect(drop.length).to.be.equal(2);
 
     const readyState = stub(mongoose.connection, 'readyState').value(1);
     const mockoose = mock(mongoose.connection);
-    const clear = mockoose.expects('dropDatabase').yields(new Error('Failed'));
+    const dropDb = mockoose.expects('dropDatabase').yields(new Error('Failed'));
 
     drop((error, instance) => {
       mockoose.verify();
@@ -523,9 +524,69 @@ describe('unit', () => {
 
       expect(error).to.exist;
       expect(instance).to.not.exist;
-      expect(clear).to.have.been.calledOnce;
+      expect(dropDb).to.have.been.calledOnce;
 
       done();
+    });
+  });
+
+  it('should clear default connection', (done) => {
+    expect(clear).to.exist;
+    expect(clear).to.be.a('function');
+
+    const readyState = stub(mongoose.connection, 'readyState').value(1);
+    const mockoose = mock(TestModel);
+    const deleteMany = mockoose.expects('deleteMany').yields(null, null);
+
+    clear(TestModel, (error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+      readyState.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.not.exist;
+      expect(deleteMany).to.have.been.calledOnce;
+
+      done(error, instance);
+    });
+  });
+
+  it('should clear error', (done) => {
+    expect(clear).to.exist;
+    expect(clear).to.be.a('function');
+
+    const readyState = stub(mongoose.connection, 'readyState').value(1);
+    const mockoose = mock(TestModel);
+    const deleteMany = mockoose
+      .expects('deleteMany')
+      .yields(new Error('Failed'));
+
+    clear(testModelName, (error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+      readyState.restore();
+
+      expect(error).to.exist;
+      expect(instance).to.not.exist;
+      expect(deleteMany).to.have.been.calledOnce;
+
+      done();
+    });
+  });
+
+  it('should not clear unknown model', (done) => {
+    expect(clear).to.exist;
+    expect(clear).to.be.a('function');
+
+    const readyState = stub(mongoose.connection, 'readyState').value(1);
+
+    clear('Unknown', (error, instance) => {
+      readyState.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.not.exist;
+
+      done(error, instance);
     });
   });
 });
