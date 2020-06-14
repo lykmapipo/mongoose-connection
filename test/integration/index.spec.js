@@ -1,3 +1,5 @@
+import { find } from 'lodash';
+import { waterfall } from 'async';
 import { expect } from '@lykmapipo/test-helpers';
 
 import {
@@ -6,6 +8,8 @@ import {
   disconnect,
   isConnection,
   isConnected,
+  createModel,
+  syncIndexes,
 } from '../../src/index';
 
 describe('integration', () => {
@@ -39,5 +43,74 @@ describe('integration', () => {
       delete process.env.MONGODB_URI;
       done(error, instance);
     });
+  });
+
+  it('should sync indexes', (done) => {
+    const User = createModel(
+      {
+        name: { type: String, index: true },
+      },
+      { autoIndex: false }
+    );
+
+    waterfall(
+      [
+        (next) => User.createCollection((error) => next(error)),
+        (next) =>
+          User.listIndexes((error, indexes) => {
+            expect(find(indexes, { name: 'name_1' })).to.not.exist;
+            next(error);
+          }),
+        (next) => syncIndexes((error) => next(error)),
+        (next) => User.listIndexes(next),
+      ],
+      (error, indexes) => {
+        expect(error).to.not.exist;
+        expect(indexes).to.exist;
+        expect(find(indexes, { name: 'name_1' })).to.exist;
+        done(error, indexes);
+      }
+    );
+  });
+
+  it('should sync indexes without autoIndex option', (done) => {
+    const User = createModel({
+      name: { type: String, index: true },
+    });
+
+    waterfall(
+      [
+        (next) => syncIndexes((error) => next(error)),
+        (next) => User.listIndexes(next),
+      ],
+      (error, indexes) => {
+        expect(error).to.not.exist;
+        expect(indexes).to.exist;
+        expect(find(indexes, { name: 'name_1' })).to.exist;
+        done(error, indexes);
+      }
+    );
+  });
+
+  it('should sync indexes with autoIndex option', (done) => {
+    const User = createModel(
+      {
+        name: { type: String, index: true },
+      },
+      { autoIndex: false }
+    );
+
+    waterfall(
+      [
+        (next) => syncIndexes((error) => next(error)),
+        (next) => User.listIndexes(next),
+      ],
+      (error, indexes) => {
+        expect(error).to.not.exist;
+        expect(indexes).to.exist;
+        expect(find(indexes, { name: 'name_1' })).to.exist;
+        done(error, indexes);
+      }
+    );
   });
 });
