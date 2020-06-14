@@ -19,6 +19,7 @@ import {
   split,
   toLower,
   trim,
+  uniqBy,
 } from 'lodash';
 import { waterfall, parallel } from 'async';
 import {
@@ -789,6 +790,62 @@ export const disconnect = (connection, done) => {
     return localConnection.close(callback(cb, replyConnection));
   }
   return mongoose.disconnect(callback(cb, replyConnection));
+};
+
+/**
+ * @function create
+ * @name create
+ * @description Persist given model instances
+ * @param {...object} [instances] model instances to persist
+ * @returns {null|Error} null or error
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * create(user, done);
+ * create(user, profile, done);
+ * create(user, profile, done);
+ */
+export const create = (...instances /* , done */) => {
+  // ensure callback
+  const cb = findLast([...instances], (instance) => {
+    return isFunction(instance) && !isInstance(instance);
+  });
+
+  // collect provided instances
+  let localInstances = filter([...instances], (instance) => {
+    return isInstance(instance);
+  });
+
+  // compact and ensure unique instances by _id
+  localInstances = uniqBy(compact([...localInstances]), '_id');
+
+  // map instances to save
+  // TODO: use insertMany for same model instances
+  // const connected = isConnected();
+  let saves = map([...localInstances], (instance) => {
+    const canSave = instance.save || instance.post;
+    if (canSave) {
+      const save = (next) => {
+        const fn = instance.post || instance.save;
+        fn.call(instance, (error, saved) => {
+          next(error, saved);
+        });
+      };
+      return save;
+    }
+    return undefined;
+  });
+
+  // compact saves
+  saves = compact([...saves]);
+
+  // save & return
+  return parallel(saves, cb);
 };
 
 /**
