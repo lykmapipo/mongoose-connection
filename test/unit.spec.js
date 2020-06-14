@@ -22,6 +22,7 @@ import {
   connect,
   disconnect,
   clear,
+  syncIndexes,
   drop,
 } from '../src/index';
 
@@ -585,6 +586,88 @@ describe('unit', () => {
 
       expect(error).to.not.exist;
       expect(instance).to.not.exist;
+
+      done(error, instance);
+    });
+  });
+
+  it('should sync indexes of default connection', (done) => {
+    expect(syncIndexes).to.exist;
+    expect(syncIndexes).to.be.a('function');
+
+    const readyState = stub(mongoose.connection, 'readyState').value(1);
+    const testModelNames = stub(mongoose.connection, 'modelNames').returns([
+      testModelName,
+    ]);
+    const mockoose = mock(TestModel);
+    const syncIndeces = mockoose.expects('syncIndexes').yields(null, null);
+
+    syncIndexes((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+      readyState.restore();
+      testModelNames.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.not.exist;
+      expect(syncIndeces).to.have.been.calledOnce;
+
+      done(error, instance);
+    });
+  });
+
+  it('should handle sync indexes error', (done) => {
+    expect(syncIndexes).to.exist;
+    expect(syncIndexes).to.be.a('function');
+
+    const syncError = Error('NamespaceExists');
+    syncError.codeName = 'NamespaceExists';
+
+    const readyState = stub(mongoose.connection, 'readyState').value(1);
+    const testModelNames = stub(mongoose.connection, 'modelNames').returns([
+      testModelName,
+    ]);
+    const mockoose = mock(TestModel);
+    const syncIndeces = mockoose.expects('syncIndexes').yields(syncError);
+    const cleanIndeces = mockoose.expects('cleanIndexes').yields(null, null);
+    const createIndeces = mockoose.expects('createIndexes').yields(null, null);
+
+    syncIndexes((error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+      readyState.restore();
+      testModelNames.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.not.exist;
+      expect(syncIndeces).to.have.been.calledOnce;
+      expect(cleanIndeces).to.have.been.calledOnce;
+      expect(createIndeces).to.have.been.calledOnce;
+
+      done(error, instance);
+    });
+  });
+
+  it('should sync indexes of given connection', (done) => {
+    expect(syncIndexes).to.exist;
+    expect(syncIndexes).to.be.a('function');
+
+    const readyState = stub(mongoose.connection, 'readyState').value(1);
+    const testModelNames = stub(mongoose.connection, 'modelNames').returns([
+      testModelName,
+    ]);
+    const mockoose = mock(TestModel);
+    const syncIndeces = mockoose.expects('syncIndexes').yields(null, null);
+
+    syncIndexes(mongoose.connection, (error, instance) => {
+      mockoose.verify();
+      mockoose.restore();
+      readyState.restore();
+      testModelNames.restore();
+
+      expect(error).to.not.exist;
+      expect(instance).to.not.exist;
+      expect(syncIndeces).to.have.been.calledOnce;
 
       done(error, instance);
     });

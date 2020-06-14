@@ -16,7 +16,7 @@ import {
   toLower,
   trim,
 } from 'lodash';
-import { waterfall } from 'async';
+import { waterfall, parallel } from 'async';
 import {
   compact,
   mergeObjects,
@@ -488,6 +488,7 @@ export const deleteModels = (connection, ...models) => {
   localModelNames = sortedUniq([...localModelNames]);
 
   // delete each model safely
+  // TODO: ensure collection dropped?
   forEach(localModelNames, (modelName) => {
     try {
       localConnection.deleteModel(modelName);
@@ -727,6 +728,88 @@ export const clear = (connection, ...models) => {
 
   // run deletes
   return waterfall(deletes, cb);
+};
+
+/**
+ * @function syncIndexes
+ * @name syncIndexes
+ * @description Sync indexes in MongoDB to match, indexes defined in schemas
+ * @param {object} [connection] valid connection or default
+ * @param {Function} done a callback to invoke on success or failure
+ * @returns {null|Error} null or error
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * syncIndexes(done);
+ *
+ * syncIndexes(connection, done);
+ *
+ */
+export const syncIndexes = (connection, done) => {
+  // normalize arguments
+  const localConnection = isConnection(connection)
+    ? connection
+    : mongoose.connection;
+  const cb = !isConnection(connection) ? connection : done;
+
+  // ensure connected before sync
+  const canSync = isConnected(localConnection);
+  if (!canSync) {
+    return cb();
+  }
+
+  // re-run syn index safely
+  const cleanIndexesOf = (Model, next) => {
+    return Model.cleanIndexes((error) => next(error));
+  };
+  const createIndexesOf = (Model, next) => {
+    return Model.createIndexes((error) => next(error));
+  };
+  const safeSyncIndexesOf = (Model, next) => {
+    return waterfall(
+      [
+        (then) => cleanIndexesOf(Model, then),
+        (then) => createIndexesOf(Model, then),
+      ],
+      next
+    );
+  };
+
+  // safe sync indexes of a given model
+  const syncIndexesOf = (Model) => (next) => {
+    const canModelSync = Model && isFunction(Model.syncIndexes);
+    if (canModelSync) {
+      return Model.syncIndexes({}, (error) => {
+        // handle collection exists
+        if (error && error.codeName === 'NamespaceExists') {
+          return safeSyncIndexesOf(Model, next);
+        }
+        // otherwise unknown error
+        return next(error);
+      });
+    }
+    return undefined;
+  };
+
+  // obtain available connection models
+  const localModelNames = modelNames(localConnection);
+  const Models = map(localModelNames, (modelName) => {
+    return model(modelName);
+  });
+
+  // build indexes sync tasks
+  let syncs = map(Models, (Model) => {
+    return syncIndexesOf(Model);
+  });
+
+  // do syncing
+  syncs = compact([...syncs]);
+  return parallel(syncs, (error) => cb(error));
 };
 
 /**
