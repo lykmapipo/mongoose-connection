@@ -473,7 +473,7 @@ describe('unit', () => {
       mockoose.restore();
 
       expect(error).to.not.exist;
-      expect(instance).to.be.equal(null);
+      expect(instance).to.exist;
       expect(close).to.have.been.calledOnce;
 
       done(error, instance);
@@ -493,7 +493,7 @@ describe('unit', () => {
       mockoose.restore();
 
       expect(error).to.not.exist;
-      expect(instance).to.be.equal(null);
+      expect(instance).to.exist;
       expect(close).to.have.been.calledOnce;
 
       done(error, instance);
@@ -513,7 +513,7 @@ describe('unit', () => {
       mockoose.restore();
 
       expect(error).to.exist;
-      expect(instance).to.not.exist;
+      expect(instance).to.exist;
       expect(close).to.have.been.calledOnce;
 
       done();
@@ -678,7 +678,7 @@ describe('unit', () => {
       readyState.restore();
 
       expect(error).to.not.exist;
-      expect(instance).to.not.exist;
+      expect(instance).to.exist;
       expect(dropDb).to.have.been.calledOnce;
       expect(close).to.have.been.calledOnce;
 
@@ -702,7 +702,7 @@ describe('unit', () => {
       readyState.restore();
 
       expect(error).to.not.exist;
-      expect(instance).to.not.exist;
+      expect(instance).to.exist;
       expect(dropDb).to.have.been.calledOnce;
       expect(close).to.have.been.calledOnce;
 
@@ -725,7 +725,7 @@ describe('unit', () => {
       readyState.restore();
 
       expect(error).to.not.exist;
-      expect(instance).to.not.exist;
+      expect(instance).to.exist;
       expect(close).to.have.been.calledOnce;
 
       done(error, instance);
