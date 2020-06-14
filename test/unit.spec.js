@@ -17,6 +17,7 @@ import {
   createSubSchema,
   createSchema,
   model,
+  collectionNameOf,
   createModel,
   deleteModels,
   connect,
@@ -252,6 +253,18 @@ describe('unit', () => {
     expect(User).to.exist;
     expect(User.modelName).to.exist;
     expect(User.modelName).to.not.be.equal('User');
+  });
+
+  it('should get collection name of registered model', () => {
+    const modelName = 'Edge';
+    const Edge = model(modelName, new mongoose.Schema({ name: String }));
+
+    expect(collectionNameOf(modelName)).to.be.equal('edges');
+    expect(collectionNameOf(Edge)).to.be.equal('edges');
+  });
+
+  it('should get collection name of non registered model', () => {
+    expect(collectionNameOf('Pet')).to.be.equal('pets');
   });
 
   it('should delete models', () => {

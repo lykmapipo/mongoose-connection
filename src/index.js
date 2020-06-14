@@ -286,7 +286,7 @@ export const isInstance = (instance) => {
  * @function modelNames
  * @name modelNames
  * @description Obtain registered model names
- * @param {object} [connection] valid connection
+ * @param {object} [connection] valid connection or default
  * @returns {string[]} set of register model names
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
@@ -451,6 +451,52 @@ export const model = (modelName, schema, connection) => {
     // catch error & return no model
     return undefined;
   }
+};
+
+/**
+ * @function collectionNameOf
+ * @name collectionNameOf
+ * @description Obtain collection name of provided model
+ * @param {object} [connection] valid connection or default
+ * @param {string|object} modelName valid model or model name
+ * @returns {string} underlying collection of the model
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * const collectionName = collectionNameOf('User');
+ * //=> 'users'
+ *
+ * const collectionName = collectionNameOf(User);
+ * //=> 'users'
+ */
+export const collectionNameOf = (connection, modelName) => {
+  // normalize arguments
+  const localConnection = isConnection(connection)
+    ? connection
+    : mongoose.connection;
+  const localModelName = !isConnection(connection) ? connection : modelName;
+
+  // get model if exists
+  const Model = isModel(localModelName)
+    ? localModelName
+    : model(localModelName, localConnection);
+
+  // derive collection name from model
+  let collectionName =
+    get(Model, 'collection.name') || get(Model, 'collection.collectionName');
+
+  // derive collection from model name
+  if (isEmpty(collectionName)) {
+    collectionName = mongoose.pluralize()(localModelName) || localModelName;
+  }
+
+  // return collection name
+  return collectionName;
 };
 
 /**
@@ -724,7 +770,7 @@ export const clear = (connection, ...models) => {
     // obtain model
     const Model = isModel(modelName)
       ? modelName
-      : model(modelName, localConnection);
+      : model(modelName, localConnection, localConnection);
 
     // prepare cleaner
     if (connected && Model && isFunction(Model.deleteMany)) {
@@ -817,7 +863,7 @@ export const syncIndexes = (connection, done) => {
   // obtain available connection models
   const localModelNames = modelNames(localConnection);
   const Models = map(localModelNames, (modelName) => {
-    return model(modelName);
+    return model(modelName, localConnection);
   });
 
   // build indexes sync tasks
