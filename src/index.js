@@ -632,7 +632,6 @@ export const createModel = (schema, options, connection, ...plugins) => {
  * will be obtained from process.env.MONGODB_URI or package name prefixed with
  * current execution environment name
  * @param {Function} [done] a callback to invoke on success or failure
- * @returns {object|Error} mongoose instance or error
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
  * @since 0.2.0
@@ -641,9 +640,9 @@ export const createModel = (schema, options, connection, ...plugins) => {
  * @public
  * @example
  *
- * connect((error) => { ... });
+ * connect((error, connection) => { ... });
  *
- * connect(url, (error) => { ... });
+ * connect(url, (error, connection) => { ... });
  */
 export const connect = (url, done) => {
   // obtain current node runtime environment
@@ -665,7 +664,7 @@ export const connect = (url, done) => {
   const MONGODB_URI = trim(getString('MONGODB_URI', DB_NAME));
 
   // normalize arguments
-  let uri = isFunction(url) ? MONGODB_URI : url;
+  const uri = trim(isFunction(url) ? MONGODB_URI : url);
   const cb = isFunction(url) ? url : done;
 
   // connection options
@@ -677,8 +676,7 @@ export const connect = (url, done) => {
   };
 
   // establish connection
-  uri = trim(uri);
-  return mongoose.connect(uri, options, cb);
+  mongoose.connect(uri, options, cb);
 };
 
 /**

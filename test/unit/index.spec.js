@@ -25,7 +25,7 @@ import {
   clear,
   syncIndexes,
   drop,
-} from '../src/index';
+} from '../../src/index';
 
 describe('unit', () => {
   let testModelName;
