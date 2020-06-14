@@ -1,6 +1,6 @@
 import { find } from 'lodash';
 import { waterfall } from 'async';
-import { expect } from '@lykmapipo/test-helpers';
+import { expect, faker } from '@lykmapipo/test-helpers';
 
 import {
   connect,
@@ -10,6 +10,7 @@ import {
   isConnected,
   createModel,
   syncIndexes,
+  create,
 } from '../../src/index';
 
 describe('integration', () => {
@@ -130,5 +131,35 @@ describe('integration', () => {
         done(error, indexes);
       }
     );
+  });
+
+  it('should save model instances', (done) => {
+    const User = createModel({
+      name: { type: String, index: true },
+    });
+    const a = new User({ name: faker.name.findName() });
+    const b = new User({ name: faker.name.findName() });
+    create(a, b, (error, results) => {
+      const [c, d] = results;
+      expect(error).to.not.exist;
+      expect(c).to.exist;
+      expect(d).to.exist;
+      done(error, results);
+    });
+  });
+
+  it('should save model instances', (done) => {
+    const User = createModel({
+      name: { type: String, index: true },
+    });
+    const a = new User({ name: faker.name.findName() });
+    const b = new User({ name: faker.name.findName() });
+    create([a, b], (error, results) => {
+      const [c, d] = results;
+      expect(error).to.not.exist;
+      expect(c).to.exist;
+      expect(d).to.exist;
+      done(error, results);
+    });
   });
 });

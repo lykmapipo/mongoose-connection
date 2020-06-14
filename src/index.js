@@ -812,12 +812,12 @@ export const disconnect = (connection, done) => {
  */
 export const create = (...instances /* , done */) => {
   // ensure callback
-  const cb = findLast([...instances], (instance) => {
+  const cb = findLast([].concat(...instances), (instance) => {
     return isFunction(instance) && !isInstance(instance);
   });
 
   // collect provided instances
-  let localInstances = filter([...instances], (instance) => {
+  let localInstances = filter([].concat(...instances), (instance) => {
     return isInstance(instance);
   });
 
