@@ -38,9 +38,9 @@ import {
 
 connect(error => { ... });
 syncIndexes(error => { ... });
-disconnect(error => { ... });
 clear(error => { ... });
 drop(error => { ... });
+disconnect(error => { ... });
 ```
 
 ## Testing
