@@ -8,10 +8,12 @@ import {
   isNull,
   includes,
   isFunction,
+  isPlainObject,
   isString,
   kebabCase,
   last,
   map,
+  omit,
   split,
   toLower,
   trim,
@@ -350,6 +352,63 @@ export const createSubSchema = (definition, optns) => {
 
   // return created sub schema
   return subSchema;
+};
+
+/**
+ * @function createVarySubSchema
+ * @name createVarySubSchema
+ * @description Create sub schema with variable paths
+ * @param {object} optns valid schema type options
+ * @param {...object} paths variable paths to include on schema
+ * @returns {object} valid mongoose schema
+ * @author lally elias <lallyelias87@mail.com>
+ * @since 0.2.0
+ * @version 0.1.0
+ * @public
+ * @example
+ *
+ * const locale = createVarySubSchema({ type: String }, 'en', 'sw');
+ * //=> Schema { ... }
+ *
+ * const locale = createVarySubSchema(
+ *  { type: String },
+ *  { name: 'en': required: true },
+ *  'sw'
+ * );
+ * //=> Schema { ... }
+ *
+ */
+export const createVarySubSchema = (optns, ...paths) => {
+  // ensure options
+  const defaults = { required: false };
+  const options = mergeObjects(defaults, optns);
+
+  // normalize and collect fields
+  const fields = map([...paths], (field) => {
+    // handle: string field definition
+    if (isString(field)) {
+      return { name: field, required: false };
+    }
+    // handle: object field definition
+    if (isPlainObject(field)) {
+      return mergeObjects({ required: false }, field);
+    }
+    // ignore: not valid field definition
+
+    return undefined;
+  });
+
+  // prepare schema definition
+  const definition = {};
+  forEach(sortedUniq([...fields]), (field) => {
+    definition[field.name] = mergeObjects(options, omit(field, 'name'));
+  });
+
+  // build field as sub-schema
+  const schema = createSubSchema(definition);
+
+  // return vary sub-schema
+  return schema;
 };
 
 /**

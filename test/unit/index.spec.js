@@ -15,6 +15,7 @@ import {
   isInstance,
   modelNames,
   createSubSchema,
+  createVarySubSchema,
   createSchema,
   model,
   collectionNameOf,
@@ -175,6 +176,64 @@ describe('unit', () => {
     expect(subSchema.options.id).to.be.false;
     expect(subSchema.options.timestamps).to.be.false;
     expect(subSchema.options.emitIndexErrors).to.be.true;
+  });
+
+  it('should create sub schema with variable paths', () => {
+    const schema = createVarySubSchema({ type: String }, 'en', 'sw');
+    expect(schema.constructor).to.exist;
+    expect(schema.constructor.name).to.be.equal('Schema');
+
+    expect(schema.tree.sw).to.exist;
+    expect(schema.tree.en).to.exist;
+
+    const { sw } = schema.tree;
+    const { instance } = schema.paths.sw;
+
+    expect(instance).to.be.equal('String');
+    expect(sw).to.exist;
+    expect(sw).to.be.an('object');
+    expect(sw.type).to.be.a('function');
+    expect(sw.type.name).to.be.equal('String');
+  });
+
+  it('should create sub schema with variable paths', () => {
+    const schema = createVarySubSchema({ type: String }, 'en', { name: 'sw' });
+    expect(schema.constructor).to.exist;
+    expect(schema.constructor.name).to.be.equal('Schema');
+
+    expect(schema.tree.sw).to.exist;
+    expect(schema.tree.en).to.exist;
+
+    const { sw } = schema.tree;
+    const { instance } = schema.paths.sw;
+
+    expect(instance).to.be.equal('String');
+    expect(sw).to.exist;
+    expect(sw).to.be.an('object');
+    expect(sw.type).to.be.a('function');
+    expect(sw.type.name).to.be.equal('String');
+  });
+
+  it('should create sub schema with variable paths', () => {
+    const schema = createVarySubSchema({ type: String }, 'en', {
+      name: 'sw',
+      required: true,
+    });
+    expect(schema.constructor).to.exist;
+    expect(schema.constructor.name).to.be.equal('Schema');
+
+    expect(schema.tree.sw).to.exist;
+    expect(schema.tree.en).to.exist;
+
+    const { sw } = schema.tree;
+    const { instance } = schema.paths.sw;
+
+    expect(instance).to.be.equal('String');
+    expect(sw).to.exist;
+    expect(sw).to.be.an('object');
+    expect(sw.type).to.be.a('function');
+    expect(sw.type.name).to.be.equal('String');
+    expect(sw.required).to.be.true;
   });
 
   it('should create schema', () => {
