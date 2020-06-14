@@ -609,7 +609,7 @@ export const createModel = (schema, options, connection, ...plugins) => {
   const modelSchema = createSchema(
     schemaDefinition,
     modelOptions,
-    ...allowedPlugins // TODO: plugin common global plugins
+    ...allowedPlugins
   );
 
   // register model
@@ -747,7 +747,6 @@ export const clear = (connection, ...models) => {
   });
 
   // ensure valid model names
-  // TODO: preserve model clear order
   // TODO: prevent double clear from model instance & modelName
   let localModelNames = filter([connection, ...models], (modelName) => {
     return isString(modelName) || isModel(modelName);
