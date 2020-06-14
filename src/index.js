@@ -454,11 +454,55 @@ export const model = (modelName, schema, connection) => {
 };
 
 /**
+ * @function deleteModel
+ * @name deleteModel
+ * @description Safe delete given model
+ * @param {object} [connection] valid connection or default
+ * @param {string|object} model name or model to remove
+ * @returns {object} model connection or default
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * deleteModel('User');
+ * deleteModel(User);
+ *
+ * deleteModel(connection, 'User');
+ *
+ */
+
+export const deleteModel = (connection, modelName) => {
+  // normalize arguments
+  const localConnection = isConnection(connection)
+    ? connection
+    : mongoose.connection;
+  let localModelName = !isConnection(connection) ? connection : modelName;
+
+  // ensure model name if model provided
+  localModelName = isModel(localModelName)
+    ? localModelName.modelName
+    : localModelName;
+
+  // delete model safely
+  try {
+    localConnection.deleteModel(localModelName);
+    return localConnection;
+  } catch (error) {
+    return localConnection;
+  }
+};
+
+/**
  * @function deleteModels
  * @name deleteModels
  * @description Safe delete given models
  * @param {object} [connection] valid connection or default
  * @param {...string} [models] model names to remove
+ * @returns {object} model connection or default
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
  * @since 0.2.0
@@ -483,19 +527,25 @@ export const deleteModels = (connection, ...models) => {
 
   // ensure valid model names
   let localModelNames = filter([connection, ...models], (modelName) => {
-    return !isConnection(modelName);
+    return isString(modelName) || isModel(modelName);
   });
-  localModelNames = sortedUniq([...localModelNames]);
+  localModelNames = uniq([...localModelNames]);
+
+  // use all models is non provided
+  if (isEmpty(localModelNames)) {
+    localModelNames = uniq([
+      ...localModelNames,
+      ...modelNames(localConnection),
+    ]);
+  }
 
   // delete each model safely
-  // TODO: ensure collection dropped?
   forEach(localModelNames, (modelName) => {
-    try {
-      localConnection.deleteModel(modelName);
-    } catch (error) {
-      /* ignore */
-    }
+    deleteModel(localConnection, modelName);
   });
+
+  // return connection
+  return localConnection;
 };
 
 /**
@@ -690,7 +740,7 @@ export const clear = (connection, ...models) => {
   });
   localModelNames = uniq([...localModelNames]);
 
-  // user all models is non provided
+  // use all models is non provided
   if (isEmpty(localModelNames)) {
     localModelNames = uniq([
       ...localModelNames,

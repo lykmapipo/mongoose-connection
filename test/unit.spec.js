@@ -14,10 +14,11 @@ import {
   isAggregate,
   isInstance,
   modelNames,
-  model,
   createSubSchema,
   createSchema,
   createModel,
+  model,
+  deleteModel,
   deleteModels,
   connect,
   disconnect,
@@ -165,6 +166,40 @@ describe('unit', () => {
     expect(isInstance()).to.be.false;
   });
 
+  it('should create sub schema', () => {
+    const subSchema = createSubSchema({ name: { type: String } });
+
+    expect(subSchema).to.exist;
+    expect(isSchema(subSchema)).to.be.true;
+    expect(subSchema.options._id).to.be.false;
+    expect(subSchema.options.id).to.be.false;
+    expect(subSchema.options.timestamps).to.be.false;
+    expect(subSchema.options.emitIndexErrors).to.be.true;
+  });
+
+  it('should create schema', () => {
+    const schema = createSchema({ name: { type: String } });
+
+    expect(schema).to.exist;
+    expect(isSchema(schema)).to.be.true;
+    expect(schema.options._id).to.be.true;
+    expect(schema.options.id).to.be.false;
+    expect(schema.options.timestamps).to.be.true;
+    expect(schema.options.emitIndexErrors).to.be.true;
+  });
+
+  it('should create schema with plugins', () => {
+    const schema = createSchema({ name: { type: String } }, {}, (def) => {
+      def.static('withTest', function withTest() {});
+    });
+
+    expect(schema).to.exist;
+    expect(schema.base).to.exist;
+    expect(isSchema(schema)).to.be.true;
+    expect(schema.path('name')).to.exist;
+    expect(schema.statics.withTest).to.exist.and.to.be.a('function');
+  });
+
   it('should get registered model names', () => {
     const modelName = faker.random.uuid();
     model(modelName, new mongoose.Schema({ name: String }));
@@ -220,38 +255,41 @@ describe('unit', () => {
     expect(User.modelName).to.not.be.equal('User');
   });
 
-  it('should create sub schema', () => {
-    const subSchema = createSubSchema({ name: { type: String } });
+  it('should delete model', () => {
+    const modelName = faker.random.uuid();
+    const User = createModel({ name: { type: String } }, { modelName });
+    expect(User).to.exist;
+    expect(User.modelName).to.exist.and.be.equal(modelName);
+    expect(User.base).to.exist;
 
-    expect(subSchema).to.exist;
-    expect(isSchema(subSchema)).to.be.true;
-    expect(subSchema.options._id).to.be.false;
-    expect(subSchema.options.id).to.be.false;
-    expect(subSchema.options.timestamps).to.be.false;
-    expect(subSchema.options.emitIndexErrors).to.be.true;
+    deleteModel(User);
+    expect(model(modelName)).to.not.exist;
+
+    deleteModel(modelName);
+    expect(model(modelName)).to.not.exist;
+
+    deleteModel(mongoose.connection, modelName);
+    expect(model(modelName)).to.not.exist;
   });
 
-  it('should create schema', () => {
-    const schema = createSchema({ name: { type: String } });
+  it('should delete models', () => {
+    const modelName = faker.random.uuid();
+    const User = createModel({ name: { type: String } }, { modelName });
+    expect(User).to.exist;
+    expect(User.modelName).to.exist.and.be.equal(modelName);
+    expect(User.base).to.exist;
 
-    expect(schema).to.exist;
-    expect(isSchema(schema)).to.be.true;
-    expect(schema.options._id).to.be.true;
-    expect(schema.options.id).to.be.false;
-    expect(schema.options.timestamps).to.be.true;
-    expect(schema.options.emitIndexErrors).to.be.true;
-  });
+    deleteModels(modelName);
+    expect(model(modelName)).to.not.exist;
 
-  it('should create schema with plugins', () => {
-    const schema = createSchema({ name: { type: String } }, {}, (def) => {
-      def.static('withTest', function withTest() {});
-    });
+    deleteModels(mongoose.connection, modelName);
+    expect(model(modelName)).to.not.exist;
 
-    expect(schema).to.exist;
-    expect(schema.base).to.exist;
-    expect(isSchema(schema)).to.be.true;
-    expect(schema.path('name')).to.exist;
-    expect(schema.statics.withTest).to.exist.and.to.be.a('function');
+    deleteModels();
+    expect(model(modelName)).to.not.exist;
+
+    deleteModels(mongoose.connection);
+    expect(model(modelName)).to.not.exist;
   });
 
   it('should create model', () => {
@@ -277,20 +315,6 @@ describe('unit', () => {
     expect(User.base).to.exist;
     // expect(User.path('name')).to.exist;
     expect(User.withTest).to.exist.and.to.be.a('function');
-  });
-
-  it('should delete models', () => {
-    const modelName = faker.random.uuid();
-    const User = createModel({ name: { type: String } }, { modelName });
-    expect(User).to.exist;
-    expect(User.modelName).to.exist.and.be.equal(modelName);
-    expect(User.base).to.exist;
-
-    deleteModels(modelName);
-    expect(model(modelName)).to.not.exist;
-
-    deleteModels(mongoose.connection, modelName);
-    expect(model(modelName)).to.not.exist;
   });
 
   it('should connect successfully', (done) => {
