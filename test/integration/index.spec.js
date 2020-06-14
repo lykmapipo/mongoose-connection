@@ -45,6 +45,24 @@ describe('integration', () => {
     });
   });
 
+  it('should disconnect', (done) => {
+    waterfall(
+      [
+        (next) => connect(MONGODB_URI, next),
+        (instance, next) => disconnect(instance, next),
+      ],
+      (error, instance) => {
+        expect(error).to.not.exist;
+        expect(instance).to.exist;
+        expect(isConnection(instance)).to.be.true;
+        expect(isConnected(instance)).to.be.false;
+        expect(instance.readyState).to.be.equal(0);
+        expect(instance.name).to.be.equal('test');
+        done(error, instance);
+      }
+    );
+  });
+
   it('should sync indexes', (done) => {
     const User = createModel(
       {

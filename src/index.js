@@ -7,12 +7,14 @@ import {
   isEmpty,
   isNull,
   includes,
+  isError,
   isFunction,
   isPlainObject,
   isString,
   kebabCase,
   last,
   map,
+  noop,
   omit,
   split,
   toLower,
@@ -28,6 +30,22 @@ import {
 } from '@lykmapipo/common';
 import { getString } from '@lykmapipo/env';
 import mongoose from 'mongoose';
+
+// wrap callback
+// TODO: refactor for reuse
+const callback = (cb, ...defaultArgs) => (...replyArgs) => {
+  // prepare replies
+  const args = compact([...replyArgs, ...defaultArgs]);
+  const error = find(args, (arg) => isError(arg));
+  const replies = filter(args, (arg) => !isError(arg));
+
+  // reply
+  if (isFunction(cb)) {
+    return cb(error, ...replies);
+  }
+  // noop
+  return noop(error, ...replies);
+};
 
 /**
  * @name SCHEMA_OPTIONS
@@ -744,7 +762,7 @@ export const connect = (url, done) => {
  * @description Close all connections
  * @param {object} [connection] valid connection or default
  * @param {Function} [done] a callback to invoke on success or failure
- * @returns {null|Error} null or error
+ * @returns {object|Error} connection or error
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
  * @since 0.2.0
@@ -761,11 +779,16 @@ export const disconnect = (connection, done) => {
   const localConnection = isConnection(connection) ? connection : undefined;
   const cb = !isConnection(connection) ? connection : done;
 
+  // wrap callback
+  const replyConnection = isConnection(localConnection)
+    ? localConnection
+    : mongoose.connection;
+
   // disconnect
   if (localConnection) {
-    return localConnection.close(cb);
+    return localConnection.close(callback(cb, replyConnection));
   }
-  return mongoose.disconnect(cb);
+  return mongoose.disconnect(callback(cb, replyConnection));
 };
 
 /**
