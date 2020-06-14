@@ -438,8 +438,8 @@ export const model = (modelName, schema, connection) => {
     : mongoose.connection;
 
   // check if modelName already registered
-  // TODO: refactor modelNames(connection)?
-  const modelExists = includes(localConnection.modelNames(), localModelName);
+  const localModelNames = modelNames(localConnection);
+  const modelExists = includes(localModelNames, localModelName);
 
   // try obtain model or new register model
   try {
@@ -691,7 +691,10 @@ export const clear = (connection, ...models) => {
 
   // user all models is non provided
   if (isEmpty(localModelNames)) {
-    localModelNames = uniq([...localModelNames, ...modelNames()]);
+    localModelNames = uniq([
+      ...localModelNames,
+      ...modelNames(localConnection),
+    ]);
   }
 
   // ensure connection
