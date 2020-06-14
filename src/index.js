@@ -458,7 +458,7 @@ export const model = (modelName, schema, connection) => {
  * @name deleteModels
  * @description Safe delete given models
  * @param {object} [connection] valid connection or default
- * @param {...string} [models] model names to remove
+ * @param {...string} [models] models or model names to remove
  * @returns {object} model connection or default
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
@@ -469,6 +469,9 @@ export const model = (modelName, schema, connection) => {
  * @example
  *
  * deleteModels('User', 'Invoice');
+ * //=> delete given models
+ *
+ * deleteModels(User, Invoice);
  * //=> delete given models
  *
  * deleteModels();
