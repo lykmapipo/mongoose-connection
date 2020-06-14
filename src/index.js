@@ -454,49 +454,6 @@ export const model = (modelName, schema, connection) => {
 };
 
 /**
- * @function deleteModel
- * @name deleteModel
- * @description Safe delete given model
- * @param {object} [connection] valid connection or default
- * @param {string|object} model name or model to remove
- * @returns {object} model connection or default
- * @author lally elias <lallyelias87@gmail.com>
- * @license MIT
- * @since 0.2.0
- * @version 0.1.0
- * @static
- * @public
- * @example
- *
- * deleteModel('User');
- * deleteModel(User);
- *
- * deleteModel(connection, 'User');
- *
- */
-
-export const deleteModel = (connection, modelName) => {
-  // normalize arguments
-  const localConnection = isConnection(connection)
-    ? connection
-    : mongoose.connection;
-  let localModelName = !isConnection(connection) ? connection : modelName;
-
-  // ensure model name if model provided
-  localModelName = isModel(localModelName)
-    ? localModelName.modelName
-    : localModelName;
-
-  // delete model safely
-  try {
-    localConnection.deleteModel(localModelName);
-    return localConnection;
-  } catch (error) {
-    return localConnection;
-  }
-};
-
-/**
  * @function deleteModels
  * @name deleteModels
  * @description Safe delete given models
@@ -541,7 +498,15 @@ export const deleteModels = (connection, ...models) => {
 
   // delete each model safely
   forEach(localModelNames, (modelName) => {
-    deleteModel(localConnection, modelName);
+    // ensure model name if model provided
+    const localModelName = isModel(modelName) ? modelName.modelName : modelName;
+
+    // delete model safely
+    try {
+      localConnection.deleteModel(localModelName);
+    } catch (error) {
+      /* ignore */
+    }
   });
 
   // return connection

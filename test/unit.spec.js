@@ -18,7 +18,6 @@ import {
   createSchema,
   createModel,
   model,
-  deleteModel,
   deleteModels,
   connect,
   disconnect,
@@ -255,29 +254,15 @@ describe('unit', () => {
     expect(User.modelName).to.not.be.equal('User');
   });
 
-  it('should delete model', () => {
-    const modelName = faker.random.uuid();
-    const User = createModel({ name: { type: String } }, { modelName });
-    expect(User).to.exist;
-    expect(User.modelName).to.exist.and.be.equal(modelName);
-    expect(User.base).to.exist;
-
-    deleteModel(User);
-    expect(model(modelName)).to.not.exist;
-
-    deleteModel(modelName);
-    expect(model(modelName)).to.not.exist;
-
-    deleteModel(mongoose.connection, modelName);
-    expect(model(modelName)).to.not.exist;
-  });
-
   it('should delete models', () => {
     const modelName = faker.random.uuid();
     const User = createModel({ name: { type: String } }, { modelName });
     expect(User).to.exist;
     expect(User.modelName).to.exist.and.be.equal(modelName);
     expect(User.base).to.exist;
+
+    deleteModels(User);
+    expect(model(modelName)).to.not.exist;
 
     deleteModels(modelName);
     expect(model(modelName)).to.not.exist;
