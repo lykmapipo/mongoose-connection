@@ -2,12 +2,15 @@ import { find } from 'lodash';
 import { waterfall } from 'async';
 import { expect, faker } from '@lykmapipo/test-helpers';
 
+import mongoose from 'mongoose';
+
 import {
   connect,
   drop,
   disconnect,
   isConnection,
   isConnected,
+  model,
   createModel,
   syncIndexes,
   create,
@@ -20,6 +23,36 @@ describe('integration', () => {
   beforeEach((done) => connect(done));
   afterEach((done) => drop(done));
   afterEach((done) => disconnect(done));
+
+  it('should register new model', () => {
+    const User = model('User', new mongoose.Schema({ name: String }));
+    expect(User).to.exist;
+    expect(User.modelName).to.be.equal('User');
+  });
+
+  it('should return already registered model', () => {
+    const User = model('User');
+    expect(User).to.exist;
+    expect(User.modelName).to.be.equal('User');
+  });
+
+  it('should return already registered model', () => {
+    const User = model('User', new mongoose.Schema({ name: String }));
+    expect(User).to.exist;
+    expect(User.modelName).to.be.equal('User');
+  });
+
+  it('should get non existing model silent', () => {
+    const Profile = model('Profile');
+    expect(Profile).to.not.exist;
+  });
+
+  it('should register a random model', () => {
+    const User = model(new mongoose.Schema({ name: String }));
+    expect(User).to.exist;
+    expect(User.modelName).to.exist;
+    expect(User.modelName).to.not.be.equal('User');
+  });
 
   it('should connect on given url', (done) => {
     connect(MONGODB_URI, (error, instance) => {
@@ -63,6 +96,36 @@ describe('integration', () => {
         done(error, instance);
       }
     );
+  });
+
+  it('should save model instances', (done) => {
+    const User = createModel({
+      name: { type: String, index: true },
+    });
+    const a = new User({ name: faker.name.findName() });
+    const b = new User({ name: faker.name.findName() });
+    create(a, b, (error, results) => {
+      const [c, d] = results;
+      expect(error).to.not.exist;
+      expect(c).to.exist;
+      expect(d).to.exist;
+      done(error, results);
+    });
+  });
+
+  it('should save model instances', (done) => {
+    const User = createModel({
+      name: { type: String, index: true },
+    });
+    const a = new User({ name: faker.name.findName() });
+    const b = new User({ name: faker.name.findName() });
+    create([a, b], (error, results) => {
+      const [c, d] = results;
+      expect(error).to.not.exist;
+      expect(c).to.exist;
+      expect(d).to.exist;
+      done(error, results);
+    });
   });
 
   it('should sync indexes', (done) => {
@@ -132,36 +195,6 @@ describe('integration', () => {
         done(error, indexes);
       }
     );
-  });
-
-  it('should save model instances', (done) => {
-    const User = createModel({
-      name: { type: String, index: true },
-    });
-    const a = new User({ name: faker.name.findName() });
-    const b = new User({ name: faker.name.findName() });
-    create(a, b, (error, results) => {
-      const [c, d] = results;
-      expect(error).to.not.exist;
-      expect(c).to.exist;
-      expect(d).to.exist;
-      done(error, results);
-    });
-  });
-
-  it('should save model instances', (done) => {
-    const User = createModel({
-      name: { type: String, index: true },
-    });
-    const a = new User({ name: faker.name.findName() });
-    const b = new User({ name: faker.name.findName() });
-    create([a, b], (error, results) => {
-      const [c, d] = results;
-      expect(error).to.not.exist;
-      expect(c).to.exist;
-      expect(d).to.exist;
-      done(error, results);
-    });
   });
 
   it('should clear using models', (done) => {

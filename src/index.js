@@ -7,14 +7,12 @@ import {
   isEmpty,
   isNull,
   includes,
-  isError,
   isFunction,
   isPlainObject,
   isString,
   kebabCase,
   last,
   map,
-  noop,
   omit,
   split,
   toLower,
@@ -28,25 +26,10 @@ import {
   pkg,
   uniq,
   sortedUniq,
+  wrapCallback,
 } from '@lykmapipo/common';
 import { getString } from '@lykmapipo/env';
 import mongoose from 'mongoose';
-
-// wrap callback
-// TODO: refactor for reuse
-const callback = (cb, ...defaultArgs) => (...replyArgs) => {
-  // prepare replies
-  const args = compact([...replyArgs, ...defaultArgs]);
-  const error = find(args, (arg) => isError(arg));
-  const replies = filter(args, (arg) => !isError(arg));
-
-  // reply
-  if (isFunction(cb)) {
-    return cb(error, ...replies);
-  }
-  // noop
-  return noop(error, ...replies);
-};
 
 /**
  * @name SCHEMA_OPTIONS
@@ -599,7 +582,7 @@ export const collectionNameOf = (connection, modelName) => {
  * //=> delete given models
  *
  * deleteModels();
- * //=> remove all models
+ * //=> delete all models
  */
 
 export const deleteModels = (connection, ...models) => {
@@ -787,9 +770,9 @@ export const disconnect = (connection, done) => {
 
   // disconnect
   if (localConnection) {
-    return localConnection.close(callback(cb, replyConnection));
+    return localConnection.close(wrapCallback(cb, replyConnection));
   }
-  return mongoose.disconnect(callback(cb, replyConnection));
+  return mongoose.disconnect(wrapCallback(cb, replyConnection));
 };
 
 /**
@@ -846,88 +829,6 @@ export const create = (...instances /* , done */) => {
 
   // save & return
   return parallel(saves, cb);
-};
-
-/**
- * @function clear
- * @name clear
- * @description Clear provided models or all if none give
- * @param {object} [connection] valid connection or default
- * @param {...string} [models] model names to remove or default to all
- * @returns {null|Error} null or error
- * @author lally elias <lallyelias87@gmail.com>
- * @license MIT
- * @since 0.2.0
- * @version 0.1.0
- * @static
- * @public
- * @example
- *
- * clear(done);
- * clear('User', done);
- * clear('User', 'Profile', done);
- *
- * clear(connection, done);
- * clear(connection, 'User', done);
- *
- */
-export const clear = (connection, ...models) => {
-  // ensure connection
-  let localConnection = find([connection, ...models], (modelName) => {
-    return isConnection(modelName);
-  });
-  localConnection = localConnection || mongoose.connection;
-
-  // ensure callback
-  const cb = findLast([connection, ...models], (modelName) => {
-    return isFunction(modelName);
-  });
-
-  // ensure valid model names
-  // TODO: prevent double clear from model instance & modelName
-  let localModelNames = filter([connection, ...models], (modelName) => {
-    return isString(modelName) || isModel(modelName);
-  });
-  localModelNames = uniq([...localModelNames]);
-
-  // use all models is non provided
-  if (isEmpty(localModelNames)) {
-    localModelNames = uniq([
-      ...localModelNames,
-      ...modelNames(localConnection),
-    ]);
-  }
-
-  // ensure connection
-  const connected = isConnected(localConnection);
-
-  // clear model
-  const clearModel = (modelName) => {
-    // obtain model
-    const Model = isModel(modelName)
-      ? modelName
-      : model(modelName, localConnection, localConnection);
-
-    // prepare cleaner
-    if (connected && Model && isFunction(Model.deleteMany)) {
-      const clearModelData = (next) => {
-        return Model.deleteMany((error) => {
-          return next(error);
-        });
-      };
-      return clearModelData;
-    }
-
-    // do nothing
-    return undefined;
-  };
-
-  // map modelNames to Model.deleteMany
-  let deletes = map([...localModelNames], clearModel);
-  deletes = compact([...deletes]);
-
-  // run deletes
-  return waterfall(deletes, cb);
 };
 
 /**
@@ -1010,6 +911,88 @@ export const syncIndexes = (connection, done) => {
   // do syncing
   syncs = compact([...syncs]);
   return parallel(syncs, (error) => cb(error));
+};
+
+/**
+ * @function clear
+ * @name clear
+ * @description Clear provided models or all if none give
+ * @param {object} [connection] valid connection or default
+ * @param {...string} [models] model names to remove or default to all
+ * @returns {null|Error} null or error
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.2.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * clear(done);
+ * clear('User', done);
+ * clear('User', 'Profile', done);
+ *
+ * clear(connection, done);
+ * clear(connection, 'User', done);
+ *
+ */
+export const clear = (connection, ...models /* , done */) => {
+  // ensure connection
+  let localConnection = find([connection, ...models], (modelName) => {
+    return isConnection(modelName);
+  });
+  localConnection = localConnection || mongoose.connection;
+
+  // ensure callback
+  const cb = findLast([connection, ...models], (modelName) => {
+    return isFunction(modelName);
+  });
+
+  // ensure valid model names
+  // TODO: prevent double clear from model instance & modelName
+  let localModelNames = filter([connection, ...models], (modelName) => {
+    return isString(modelName) || isModel(modelName);
+  });
+  localModelNames = uniq([...localModelNames]);
+
+  // use all models is non provided
+  if (isEmpty(localModelNames)) {
+    localModelNames = uniq([
+      ...localModelNames,
+      ...modelNames(localConnection),
+    ]);
+  }
+
+  // ensure connection
+  const connected = isConnected(localConnection);
+
+  // clear model
+  const clearModel = (modelName) => {
+    // obtain model
+    const Model = isModel(modelName)
+      ? modelName
+      : model(modelName, localConnection, localConnection);
+
+    // prepare cleaner
+    if (connected && Model && isFunction(Model.deleteMany)) {
+      const clearModelData = (next) => {
+        return Model.deleteMany((error) => {
+          return next(error);
+        });
+      };
+      return clearModelData;
+    }
+
+    // do nothing
+    return undefined;
+  };
+
+  // map modelNames to Model.deleteMany
+  let deletes = map([...localModelNames], clearModel);
+  deletes = compact([...deletes]);
+
+  // run deletes
+  return waterfall(deletes, cb);
 };
 
 /**
