@@ -20,9 +20,7 @@ import {
 describe('integration', () => {
   const MONGODB_URI = 'mongodb://localhost/test';
 
-  beforeEach((done) => connect(done));
-  afterEach((done) => drop(done));
-  afterEach((done) => disconnect(done));
+  before((done) => connect(done));
 
   it('should register new model', () => {
     const User = model('User', new mongoose.Schema({ name: String }));
@@ -78,24 +76,6 @@ describe('integration', () => {
       delete process.env.MONGODB_URI;
       done(error, instance);
     });
-  });
-
-  it('should disconnect', (done) => {
-    waterfall(
-      [
-        (next) => connect(MONGODB_URI, next),
-        (instance, next) => disconnect(instance, next),
-      ],
-      (error, instance) => {
-        expect(error).to.not.exist;
-        expect(instance).to.exist;
-        expect(isConnection(instance)).to.be.true;
-        expect(isConnected(instance)).to.be.false;
-        expect(instance.readyState).to.be.equal(0);
-        expect(instance.name).to.be.equal('test');
-        done(error, instance);
-      }
-    );
   });
 
   it('should save model instances', (done) => {
@@ -253,4 +233,25 @@ describe('integration', () => {
       }
     );
   });
+
+  it('should disconnect', (done) => {
+    waterfall(
+      [
+        (next) => connect(MONGODB_URI, next),
+        (instance, next) => disconnect(instance, next),
+      ],
+      (error, instance) => {
+        expect(error).to.not.exist;
+        expect(instance).to.exist;
+        expect(isConnection(instance)).to.be.true;
+        expect(isConnected(instance)).to.be.false;
+        expect(instance.readyState).to.be.equal(0);
+        expect(instance.name).to.be.equal('test');
+        done(error, instance);
+      }
+    );
+  });
+
+  after((done) => drop(done));
+  after((done) => disconnect(done));
 });
