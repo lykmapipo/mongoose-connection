@@ -11,6 +11,7 @@ import {
   createModel,
   syncIndexes,
   create,
+  clear,
 } from '../../src/index';
 
 describe('integration', () => {
@@ -161,5 +162,62 @@ describe('integration', () => {
       expect(d).to.exist;
       done(error, results);
     });
+  });
+
+  it('should clear using models', (done) => {
+    const User = createModel({
+      name: { type: String, index: true },
+    });
+    const a = new User({ name: faker.name.findName() });
+
+    waterfall(
+      [
+        (next) => create(a, (error) => next(error)),
+        (next) => clear(User, next),
+        (next) => User.countDocuments(next),
+      ],
+      (error, counts) => {
+        expect(counts).to.equal(0);
+        done(error, counts);
+      }
+    );
+  });
+
+  it('should clear using model names', (done) => {
+    const User = createModel({
+      name: { type: String, index: true },
+    });
+    const a = new User({ name: faker.name.findName() });
+
+    waterfall(
+      [
+        (next) => create(a, (error) => next(error)),
+        (next) => clear(User.modelName, next),
+        (next) => User.countDocuments(next),
+      ],
+      (error, counts) => {
+        expect(counts).to.equal(0);
+        done(error, counts);
+      }
+    );
+  });
+
+  it('should clear all models', (done) => {
+    const User = createModel({
+      name: { type: String, index: true },
+    });
+    const a = new User({ name: faker.name.findName() });
+
+    waterfall(
+      [
+        (next) => create(a, (error) => next(error)),
+        (next) => clear(next),
+        (next) => User.countDocuments(next),
+      ],
+      (error, counts) => {
+        expect(counts).to.equal(0);
+        done(error, counts);
+      }
+    );
   });
 });
