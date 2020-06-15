@@ -1,33 +1,6 @@
-import {
-  find,
-  findLast,
-  filter,
-  forEach,
-  get,
-  isEmpty,
-  isNull,
-  includes,
-  isFunction,
-  isPlainObject,
-  isString,
-  kebabCase,
-  last,
-  map,
-  omit,
-  split,
-  toLower,
-  trim,
-  uniqBy,
-} from 'lodash';
-import { waterfall, parallel } from 'async';
-import {
-  compact,
-  mergeObjects,
-  pkg,
-  uniq,
-  sortedUniq,
-  wrapCallback,
-} from '@lykmapipo/common';
+import { isFunction, get, isNull, map, isString, isPlainObject, forEach, omit, includes, isEmpty, find, filter, toLower, last, split, kebabCase, trim, findLast, uniqBy } from 'lodash';
+import { parallel, waterfall } from 'async';
+import { sortedUniq, mergeObjects, uniq, compact, pkg, wrapCallback } from '@lykmapipo/common';
 import { getString } from '@lykmapipo/env';
 import mongoose from 'mongoose';
 
@@ -46,7 +19,7 @@ import mongoose from 'mongoose';
  * import { SCHEMA_OPTIONS } from '@lykmapipo/mongoose-connection';
  * //=> { timestamps: true, ... }
  */
-export const SCHEMA_OPTIONS = {
+const SCHEMA_OPTIONS = {
   id: false,
   timestamps: true,
   toJSON: { getters: true },
@@ -69,7 +42,7 @@ export const SCHEMA_OPTIONS = {
  * import { SUB_SCHEMA_OPTIONS } from '@lykmapipo/mongoose-connection';
  * //=> { timestamps: false, ... }
  */
-export const SUB_SCHEMA_OPTIONS = {
+const SUB_SCHEMA_OPTIONS = {
   _id: false,
   id: false,
   timestamps: false,
@@ -90,7 +63,7 @@ export const SUB_SCHEMA_OPTIONS = {
  *
  * enableDebug();
  */
-export const enableDebug = () => {
+const enableDebug = () => {
   mongoose.set('debug', true);
 };
 
@@ -108,7 +81,7 @@ export const enableDebug = () => {
  *
  * disableDebug();
  */
-export const disableDebug = () => {
+const disableDebug = () => {
   mongoose.set('debug', false);
 };
 
@@ -132,7 +105,7 @@ export const disableDebug = () => {
  * isConnection(null);
  * // => false
  */
-export const isConnection = (connection) => {
+const isConnection = (connection) => {
   return connection instanceof mongoose.Connection;
 };
 
@@ -156,7 +129,7 @@ export const isConnection = (connection) => {
  * isConnected(null);
  * // => false
  */
-export const isConnected = (connection) => {
+const isConnected = (connection) => {
   return isConnection(connection) && connection.readyState === 1;
 };
 
@@ -180,7 +153,7 @@ export const isConnected = (connection) => {
  * isSchema(schema);
  * // => true
  */
-export const isSchema = (schema) => {
+const isSchema = (schema) => {
   return schema instanceof mongoose.Schema;
 };
 
@@ -204,7 +177,7 @@ export const isSchema = (schema) => {
  * isModel(model);
  * // => true
  */
-export const isModel = (model) => {
+const isModel = (model) => {
   return !!model && model.prototype instanceof mongoose.Model;
 };
 
@@ -228,7 +201,7 @@ export const isModel = (model) => {
  * isQuery(query);
  * // => true
  */
-export const isQuery = (query) => {
+const isQuery = (query) => {
   return query instanceof mongoose.Query;
 };
 
@@ -252,7 +225,7 @@ export const isQuery = (query) => {
  * isAggregate(aggregate);
  * // => true
  */
-export const isAggregate = (aggregate) => {
+const isAggregate = (aggregate) => {
   return aggregate instanceof mongoose.Aggregate;
 };
 
@@ -276,7 +249,7 @@ export const isAggregate = (aggregate) => {
  * isInstance(instance);
  * // => true
  */
-export const isInstance = (instance) => {
+const isInstance = (instance) => {
   if (instance) {
     const isValidInstance =
       isFunction(get(instance, 'toObject', null)) &&
@@ -306,7 +279,7 @@ export const isInstance = (instance) => {
  * modelNames(connection);
  * //=> ['User', ... ]
  */
-export const modelNames = (connection) => {
+const modelNames = (connection) => {
   // ensure connection
   const localConnection = isConnection(connection)
     ? connection
@@ -342,7 +315,7 @@ export const modelNames = (connection) => {
  * createSubSchema({ name: { type: String } }, { timestamps: true });
  * // => Schema{ ... }
  */
-export const createSubSchema = (definition, optns) => {
+const createSubSchema = (definition, optns) => {
   // ensure sub schema definition
   const schemaDefinition = mergeObjects(definition);
 
@@ -380,7 +353,7 @@ export const createSubSchema = (definition, optns) => {
  * //=> Schema { ... }
  *
  */
-export const createVarySubSchema = (optns, ...paths) => {
+const createVarySubSchema = (optns, ...paths) => {
   // ensure options
   const defaults = { required: false };
   const options = mergeObjects(defaults, optns);
@@ -435,7 +408,7 @@ export const createVarySubSchema = (optns, ...paths) => {
  * createSchema({ name: { type: String } }, { timestamps: false });
  * // => Schema{ ... }
  */
-export const createSchema = (definition, optns, ...plugins) => {
+const createSchema = (definition, optns, ...plugins) => {
   // ensure schema definition
   const schemaDefinition = mergeObjects(definition);
 
@@ -480,7 +453,7 @@ export const createSchema = (definition, optns, ...plugins) => {
  * model(null)
  * //=> undefined
  */
-export const model = (modelName, schema, connection) => {
+const model = (modelName, schema, connection) => {
   // obtain modelName or random name
   let localModelName = new mongoose.Types.ObjectId().toString();
   localModelName = isString(modelName) ? modelName : localModelName;
@@ -535,7 +508,7 @@ export const model = (modelName, schema, connection) => {
  * const collectionName = collectionNameOf(User);
  * //=> 'users'
  */
-export const collectionNameOf = (connection, modelName) => {
+const collectionNameOf = (connection, modelName) => {
   // normalize arguments
   const localConnection = isConnection(connection)
     ? connection
@@ -585,7 +558,7 @@ export const collectionNameOf = (connection, modelName) => {
  * //=> delete all models
  */
 
-export const deleteModels = (connection, ...models) => {
+const deleteModels = (connection, ...models) => {
   // ensure connection
   let localConnection = find([connection, ...models], (modelName) => {
     return isConnection(modelName);
@@ -647,7 +620,7 @@ export const deleteModels = (connection, ...models) => {
  * createModel({ name: { type: String } }, { modelName: 'User' }, autopopulate);
  * // => User{ ... }
  */
-export const createModel = (schema, options, connection, ...plugins) => {
+const createModel = (schema, options, connection, ...plugins) => {
   // ensure model schema definition
   const schemaDefinition = mergeObjects(schema);
 
@@ -705,7 +678,7 @@ export const createModel = (schema, options, connection, ...plugins) => {
  *
  * connect(url, (error, connection) => { ... });
  */
-export const connect = (url, done) => {
+const connect = (url, done) => {
   // obtain current node runtime environment
   const NODE_ENV = getString('NODE_ENV', 'development');
 
@@ -758,7 +731,7 @@ export const connect = (url, done) => {
  * disconnect((error) => { ... });
  *
  */
-export const disconnect = (connection, done) => {
+const disconnect = (connection, done) => {
   // normalize arguments
   const localConnection = isConnection(connection) ? connection : undefined;
   const cb = !isConnection(connection) ? connection : done;
@@ -793,7 +766,7 @@ export const disconnect = (connection, done) => {
  * create(user, profile, done);
  * create(user, profile, done);
  */
-export const create = (...instances /* , done */) => {
+const create = (...instances /* , done */) => {
   // ensure callback
   const cb = findLast([].concat(...instances), (instance) => {
     return isFunction(instance) && !isInstance(instance);
@@ -851,7 +824,7 @@ export const create = (...instances /* , done */) => {
  * syncIndexes(connection, done);
  *
  */
-export const syncIndexes = (connection, done) => {
+const syncIndexes = (connection, done) => {
   // normalize arguments
   const localConnection = isConnection(connection)
     ? connection
@@ -936,7 +909,7 @@ export const syncIndexes = (connection, done) => {
  * clear(connection, 'User', done);
  *
  */
-export const clear = (connection, ...models /* , done */) => {
+const clear = (connection, ...models /* , done */) => {
   // ensure connection
   let localConnection = find([connection, ...models], (modelName) => {
     return isConnection(modelName);
@@ -1014,7 +987,7 @@ export const clear = (connection, ...models /* , done */) => {
  * drop((error) => { ... });
  *
  */
-export const drop = (connection, done) => {
+const drop = (connection, done) => {
   // normalize arguments
   const localConnection = isConnection(connection)
     ? connection
@@ -1039,3 +1012,5 @@ export const drop = (connection, done) => {
   // continue to disconnect
   return disconnect(localConnection, cb);
 };
+
+export { SCHEMA_OPTIONS, SUB_SCHEMA_OPTIONS, clear, collectionNameOf, connect, create, createModel, createSchema, createSubSchema, createVarySubSchema, deleteModels, disableDebug, disconnect, drop, enableDebug, isAggregate, isConnected, isConnection, isInstance, isModel, isQuery, isSchema, model, modelNames, syncIndexes };
