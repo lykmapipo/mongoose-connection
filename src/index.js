@@ -769,13 +769,12 @@ export const connect = (url, done) => {
   // return: if connected or connecting
   const conn = mongoose.connection;
   if (isConnectedOrConnecting(conn)) {
-    if (isFunction(cb)) {
-      cb(null, conn);
-    }
+    wrapCallback(cb)(null, conn);
   }
-
   // do: establish connection
-  mongoose.connect(uri, options, cb);
+  else {
+    mongoose.connect(uri, options, wrapCallback(cb));
+  }
 };
 
 /**
@@ -849,17 +848,13 @@ export const create = (...instances /* , done */) => {
   // TODO: use insertMany for same model instances
   // const connected = isConnected();
   let saves = map([...localInstances], (instance) => {
-    const canSave = instance.save || instance.post;
-    if (canSave) {
-      const save = (next) => {
-        const fn = instance.post || instance.save;
-        fn.call(instance, (error, saved) => {
-          next(error, saved);
-        });
-      };
-      return save;
-    }
-    return undefined;
+    const save = (next) => {
+      const fn = instance.post || instance.save;
+      fn.call(instance, (error, saved) => {
+        next(error, saved);
+      });
+    };
+    return save;
   });
 
   // compact saves
@@ -921,18 +916,14 @@ export const syncIndexes = (connection, done) => {
 
   // safe sync indexes of a given model
   const syncIndexesOf = (Model) => (next) => {
-    const canModelSync = Model && isFunction(Model.syncIndexes);
-    if (canModelSync) {
-      return Model.syncIndexes({}, (error) => {
-        // handle collection exists
-        if (error && error.codeName === 'NamespaceExists') {
-          return safeSyncIndexesOf(Model, next);
-        }
-        // otherwise unknown error
-        return next(error);
-      });
-    }
-    return undefined;
+    return Model.syncIndexes({}, (error) => {
+      // handle collection exists
+      if (error && error.codeName === 'NamespaceExists') {
+        return safeSyncIndexesOf(Model, next);
+      }
+      // otherwise unknown error
+      return next(error);
+    });
   };
 
   // obtain available connection models

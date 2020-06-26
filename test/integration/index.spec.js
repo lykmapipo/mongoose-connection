@@ -78,7 +78,7 @@ describe('integration', () => {
     });
     const a = new User({ name: faker.name.findName() });
     const b = new User({ name: faker.name.findName() });
-    const c = null;
+    const c = { f: 1 };
     create([a, b, c], (error, results) => {
       const [d, e] = results;
       expect(error).to.not.exist;
@@ -217,7 +217,7 @@ describe('integration', () => {
   describe('connect', () => {
     beforeEach((done) => disconnect(done));
 
-    it.skip('should quick connect', () => {
+    it('should quick connect', () => {
       expect(() => connect()).to.not.throw();
     });
 
@@ -247,7 +247,7 @@ describe('integration', () => {
       });
     });
 
-    it.skip('should not throw when connect multiple times', (done) => {
+    it('should not throw when connect multiple times', (done) => {
       parallel(
         [
           (next) => connect(MONGODB_URI, (error) => next(error)),
@@ -282,6 +282,13 @@ describe('integration', () => {
           done(error, instance);
         }
       );
+    });
+
+    it('should ignore sync indexes', (done) => {
+      syncIndexes((error) => {
+        expect(error).to.not.exist;
+        done();
+      });
     });
 
     afterEach((done) => disconnect(done));
