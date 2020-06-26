@@ -1,3 +1,17 @@
+#### 0.3.0 (2020-06-26)
+
+##### Chores
+
+* **deps:**  force latest version & audit fix ([2667d8d0](https://github.com/lykmapipo/mongoose-connection/commit/2667d8d0e54e0262bde3c4004dbeb7bee191643f))
+
+##### New Features
+
+* **helpers:**  check if connected or connecting ([dc496942](https://github.com/lykmapipo/mongoose-connection/commit/dc4969429e62d57c84da6511c6bfb17f057fb5ac))
+
+##### Refactors
+
+*  eliminate dead codes ([579c622c](https://github.com/lykmapipo/mongoose-connection/commit/579c622c0fa97ca97e8d39a50218314294e109cc))
+
 #### 0.2.0 (2020-06-15)
 
 ##### Chores
