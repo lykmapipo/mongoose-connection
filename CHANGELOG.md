@@ -2,7 +2,12 @@
 
 ##### Chores
 
+* **release:**  compile latest source & release notes ([1874f762](https://github.com/lykmapipo/mongoose-connection/commit/1874f76264453af42a5dbfa8b9933e6a78516e32))
 * **deps:**  force latest version & audit fix ([2667d8d0](https://github.com/lykmapipo/mongoose-connection/commit/2667d8d0e54e0262bde3c4004dbeb7bee191643f))
+
+##### Documentation Changes
+
+* **documentation:**  generate latest apidocs ([047e81cb](https://github.com/lykmapipo/mongoose-connection/commit/047e81cbab852f62351687e71c44766524361a58))
 
 ##### New Features
 
