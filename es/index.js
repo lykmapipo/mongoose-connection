@@ -4,6 +4,8 @@ import { sortedUniq, mergeObjects, uniq, compact, pkg, wrapCallback } from '@lyk
 import { getString } from '@lykmapipo/env';
 import mongoose from 'mongoose';
 
+mongoose.Promise = global.Promise;
+
 /**
  * @name SCHEMA_OPTIONS
  * @constant SCHEMA_OPTIONS
@@ -113,7 +115,7 @@ const isConnection = (connection) => {
  * @function isConnected
  * @name isConnected
  * @description Check value is valid connection instance and is connected
- * @param {object} connection value to check
+ * @param {object} [connection=mongoose.connection] value to check
  * @returns {boolean} whether value is connection instance and is connected
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
@@ -129,8 +131,37 @@ const isConnection = (connection) => {
  * isConnected(null);
  * // => false
  */
-const isConnected = (connection) => {
+const isConnected = (connection = mongoose.connection) => {
   return isConnection(connection) && connection.readyState === 1;
+};
+
+/**
+ * @function isConnectedOrConnecting
+ * @name isConnectedOrConnecting
+ * @description Check value is valid connection instance and is
+ * connected or connecting
+ * @param {object} [connection=mongoose.connection] value to check
+ * @returns {boolean} whether value is connection instance and
+ * is connected or connecting
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.3.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * isConnectedOrConnecting('a');
+ * // => false
+ *
+ * isConnectedOrConnecting(null);
+ * // => false
+ */
+const isConnectedOrConnecting = (connection = mongoose.connection) => {
+  return (
+    isConnection(connection) &&
+    (connection.readyState === 1 || connection.readyState === 2)
+  );
 };
 
 /**
@@ -369,7 +400,6 @@ const createVarySubSchema = (optns, ...paths) => {
       return mergeObjects({ required: false }, field);
     }
     // ignore: not valid field definition
-
     return undefined;
   });
 
@@ -692,7 +722,7 @@ const connect = (url, done) => {
   } catch (error) {
     /* ignore */
   }
-  DB_NAME = `mongodb://localhost/${DB_NAME}`;
+  DB_NAME = `mongodb://127.0.0.1/${DB_NAME}`;
 
   // ensure database uri from environment
   const MONGODB_URI = trim(getString('MONGODB_URI', DB_NAME));
@@ -709,8 +739,15 @@ const connect = (url, done) => {
     useUnifiedTopology: true,
   };
 
-  // establish connection
-  mongoose.connect(uri, options, cb);
+  // return: if connected or connecting
+  const conn = mongoose.connection;
+  if (isConnectedOrConnecting(conn)) {
+    wrapCallback(cb)(null, conn);
+  }
+  // do: establish connection
+  else {
+    mongoose.connect(uri, options, wrapCallback(cb));
+  }
 };
 
 /**
@@ -784,17 +821,13 @@ const create = (...instances /* , done */) => {
   // TODO: use insertMany for same model instances
   // const connected = isConnected();
   let saves = map([...localInstances], (instance) => {
-    const canSave = instance.save || instance.post;
-    if (canSave) {
-      const save = (next) => {
-        const fn = instance.post || instance.save;
-        fn.call(instance, (error, saved) => {
-          next(error, saved);
-        });
-      };
-      return save;
-    }
-    return undefined;
+    const save = (next) => {
+      const fn = instance.post || instance.save;
+      fn.call(instance, (error, saved) => {
+        next(error, saved);
+      });
+    };
+    return save;
   });
 
   // compact saves
@@ -856,18 +889,14 @@ const syncIndexes = (connection, done) => {
 
   // safe sync indexes of a given model
   const syncIndexesOf = (Model) => (next) => {
-    const canModelSync = Model && isFunction(Model.syncIndexes);
-    if (canModelSync) {
-      return Model.syncIndexes({}, (error) => {
-        // handle collection exists
-        if (error && error.codeName === 'NamespaceExists') {
-          return safeSyncIndexesOf(Model, next);
-        }
-        // otherwise unknown error
-        return next(error);
-      });
-    }
-    return undefined;
+    return Model.syncIndexes({}, (error) => {
+      // handle collection exists
+      if (error && error.codeName === 'NamespaceExists') {
+        return safeSyncIndexesOf(Model, next);
+      }
+      // otherwise unknown error
+      return next(error);
+    });
   };
 
   // obtain available connection models
@@ -1013,4 +1042,4 @@ const drop = (connection, done) => {
   return disconnect(localConnection, cb);
 };
 
-export { SCHEMA_OPTIONS, SUB_SCHEMA_OPTIONS, clear, collectionNameOf, connect, create, createModel, createSchema, createSubSchema, createVarySubSchema, deleteModels, disableDebug, disconnect, drop, enableDebug, isAggregate, isConnected, isConnection, isInstance, isModel, isQuery, isSchema, model, modelNames, syncIndexes };
+export { SCHEMA_OPTIONS, SUB_SCHEMA_OPTIONS, clear, collectionNameOf, connect, create, createModel, createSchema, createSubSchema, createVarySubSchema, deleteModels, disableDebug, disconnect, drop, enableDebug, isAggregate, isConnected, isConnectedOrConnecting, isConnection, isInstance, isModel, isQuery, isSchema, model, modelNames, syncIndexes };
