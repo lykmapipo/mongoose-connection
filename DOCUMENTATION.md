@@ -131,7 +131,7 @@ isConnection(null);
 
 
 
-#### isConnected(connection) 
+#### isConnected() 
 
 Check value is valid connection instance and is connected
 
@@ -142,7 +142,7 @@ Check value is valid connection instance and is connected
 
 | Name | Type | Description |  |
 | ---- | ---- | ----------- | -------- |
-| connection | `object`  | value to check | &nbsp; |
+| connection&#x3D;mongoose.connection | `object`  | value to check | *Optional* |
 
 
 
@@ -163,6 +163,41 @@ isConnected(null);
 
 
 - `boolean`  whether value is connection instance and is connected
+
+
+
+#### isConnectedOrConnecting() 
+
+Check value is valid connection instance and is connected or connecting
+
+
+
+
+##### Parameters
+
+| Name | Type | Description |  |
+| ---- | ---- | ----------- | -------- |
+| connection&#x3D;mongoose.connection | `object`  | value to check | *Optional* |
+
+
+
+
+##### Examples
+
+```javascript
+
+isConnectedOrConnecting('a');
+// => false
+
+isConnectedOrConnecting(null);
+// => false
+```
+
+
+##### Returns
+
+
+- `boolean`  whether value is connection instance and is connected or connecting
 
 
 
