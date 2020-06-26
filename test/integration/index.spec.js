@@ -1,5 +1,5 @@
 import { find } from 'lodash';
-import { waterfall } from 'async';
+import { waterfall, parallel } from 'async';
 import { expect, faker } from '@lykmapipo/test-helpers';
 
 import mongoose from 'mongoose';
@@ -18,7 +18,11 @@ import {
 } from '../../src/index';
 
 describe('integration', () => {
-  const MONGODB_URI = 'mongodb://localhost/test';
+  const MONGODB_URI = 'mongodb://127.0.0.1/test';
+
+  before(() => {
+    delete process.env.MONGODB_URI;
+  });
 
   before((done) => connect(done));
 
@@ -52,43 +56,18 @@ describe('integration', () => {
     expect(User.modelName).to.not.be.equal('User');
   });
 
-  it('should connect on given url', (done) => {
-    connect(MONGODB_URI, (error, instance) => {
-      expect(error).to.not.exist;
-      expect(instance).to.exist;
-      expect(isConnection(instance)).to.be.true;
-      expect(isConnected(instance)).to.be.true;
-      expect(instance.readyState).to.be.equal(1);
-      expect(instance.name).to.be.equal('test');
-      done(error, instance);
-    });
-  });
-
-  it('should connect from process.env.MONGODB_URI', (done) => {
-    process.env.MONGODB_URI = MONGODB_URI;
-    connect((error, instance) => {
-      expect(error).to.not.exist;
-      expect(instance).to.exist;
-      expect(isConnection(instance)).to.be.true;
-      expect(isConnected(instance)).to.be.true;
-      expect(instance.readyState).to.be.equal(1);
-      expect(instance.name).to.be.equal('test');
-      delete process.env.MONGODB_URI;
-      done(error, instance);
-    });
-  });
-
   it('should save model instances', (done) => {
     const User = createModel({
       name: { type: String, index: true },
     });
     const a = new User({ name: faker.name.findName() });
     const b = new User({ name: faker.name.findName() });
-    create(a, b, (error, results) => {
-      const [c, d] = results;
+    const c = null;
+    create(a, b, c, (error, results) => {
+      const [d, e] = results;
       expect(error).to.not.exist;
-      expect(c).to.exist;
       expect(d).to.exist;
+      expect(e).to.exist;
       done(error, results);
     });
   });
@@ -99,11 +78,12 @@ describe('integration', () => {
     });
     const a = new User({ name: faker.name.findName() });
     const b = new User({ name: faker.name.findName() });
-    create([a, b], (error, results) => {
-      const [c, d] = results;
+    const c = null;
+    create([a, b, c], (error, results) => {
+      const [d, e] = results;
       expect(error).to.not.exist;
-      expect(c).to.exist;
       expect(d).to.exist;
+      expect(e).to.exist;
       done(error, results);
     });
   });
@@ -234,24 +214,82 @@ describe('integration', () => {
     );
   });
 
-  it('should disconnect', (done) => {
-    waterfall(
-      [
-        (next) => connect(MONGODB_URI, next),
-        (instance, next) => disconnect(instance, next),
-      ],
-      (error, instance) => {
+  describe('connect', () => {
+    beforeEach((done) => disconnect(done));
+
+    it.skip('should quick connect', () => {
+      expect(() => connect()).to.not.throw();
+    });
+
+    it('should connect on given url', (done) => {
+      connect(MONGODB_URI, (error, instance) => {
         expect(error).to.not.exist;
         expect(instance).to.exist;
         expect(isConnection(instance)).to.be.true;
-        expect(isConnected(instance)).to.be.false;
-        expect(instance.readyState).to.be.equal(0);
+        expect(isConnected(instance)).to.be.true;
+        expect(instance.readyState).to.be.equal(1);
         expect(instance.name).to.be.equal('test');
         done(error, instance);
-      }
-    );
+      });
+    });
+
+    it('should connect from process.env.MONGODB_URI', (done) => {
+      process.env.MONGODB_URI = MONGODB_URI;
+      connect((error, instance) => {
+        expect(error).to.not.exist;
+        expect(instance).to.exist;
+        expect(isConnection(instance)).to.be.true;
+        expect(isConnected(instance)).to.be.true;
+        expect(instance.readyState).to.be.equal(1);
+        expect(instance.name).to.be.equal('test');
+        delete process.env.MONGODB_URI;
+        done(error, instance);
+      });
+    });
+
+    it.skip('should not throw when connect multiple times', (done) => {
+      parallel(
+        [
+          (next) => connect(MONGODB_URI, (error) => next(error)),
+          (next) => connect(MONGODB_URI, (error) => next(error)),
+        ],
+        (error) => {
+          expect(error).to.not.exist;
+          done(error);
+        }
+      );
+    });
+
+    afterEach((done) => disconnect(done));
   });
 
+  describe('disconnect', () => {
+    beforeEach((done) => disconnect(done));
+
+    it('should disconnect', (done) => {
+      waterfall(
+        [
+          (next) => connect(MONGODB_URI, next),
+          (instance, next) => disconnect(instance, next),
+        ],
+        (error, instance) => {
+          expect(error).to.not.exist;
+          expect(instance).to.exist;
+          expect(isConnection(instance)).to.be.true;
+          expect(isConnected(instance)).to.be.false;
+          expect(instance.readyState).to.be.equal(0);
+          expect(instance.name).to.be.equal('test');
+          done(error, instance);
+        }
+      );
+    });
+
+    afterEach((done) => disconnect(done));
+  });
+
+  after(() => {
+    delete process.env.MONGODB_URI;
+  });
   after((done) => drop(done));
   after((done) => disconnect(done));
 });

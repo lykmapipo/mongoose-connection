@@ -8,6 +8,7 @@ import {
   disableDebug,
   isConnection,
   isConnected,
+  isConnectedOrConnecting,
   isSchema,
   isModel,
   isQuery,
@@ -34,6 +35,10 @@ describe('unit', () => {
   let TestModel;
   let testQuery;
   let testAggregate;
+
+  before(() => {
+    delete process.env.MONGODB_URI;
+  });
 
   beforeEach(() => {
     testModelName = faker.random.uuid();
@@ -109,11 +114,21 @@ describe('unit', () => {
   it('should check if connected', () => {
     expect(isConnected).to.exist;
     expect(isConnected).to.be.a('function');
-    expect(isConnected).to.have.length(1);
+    expect(isConnected).to.have.length(0);
 
     expect(isConnected(new mongoose.Connection())).to.be.false;
     expect(isConnected('123')).to.be.false;
     expect(isConnected()).to.be.false;
+  });
+
+  it('should check if connected or connecting', () => {
+    expect(isConnectedOrConnecting).to.exist;
+    expect(isConnectedOrConnecting).to.be.a('function');
+    expect(isConnectedOrConnecting).to.have.length(0);
+
+    expect(isConnectedOrConnecting(new mongoose.Connection())).to.be.false;
+    expect(isConnectedOrConnecting('123')).to.be.false;
+    expect(isConnectedOrConnecting()).to.be.false;
   });
 
   it('should check if value is Schema', () => {
@@ -179,7 +194,14 @@ describe('unit', () => {
   });
 
   it('should create sub schema with variable paths', () => {
-    const schema = createVarySubSchema({ type: String }, 'en', 'sw');
+    const schema = createVarySubSchema(
+      { type: String },
+      'en',
+      'sw',
+      null,
+      undefined,
+      ''
+    );
     expect(schema.constructor).to.exist;
     expect(schema.constructor.name).to.be.equal('Schema');
 
@@ -197,7 +219,14 @@ describe('unit', () => {
   });
 
   it('should create sub schema with variable paths', () => {
-    const schema = createVarySubSchema({ type: String }, 'en', { name: 'sw' });
+    const schema = createVarySubSchema(
+      { type: String },
+      'en',
+      { name: 'sw' },
+      null,
+      undefined,
+      ''
+    );
     expect(schema.constructor).to.exist;
     expect(schema.constructor.name).to.be.equal('Schema');
 
@@ -215,10 +244,17 @@ describe('unit', () => {
   });
 
   it('should create sub schema with variable paths', () => {
-    const schema = createVarySubSchema({ type: String }, 'en', {
-      name: 'sw',
-      required: true,
-    });
+    const schema = createVarySubSchema(
+      { type: String },
+      'en',
+      {
+        name: 'sw',
+        required: true,
+      },
+      null,
+      undefined,
+      ''
+    );
     expect(schema.constructor).to.exist;
     expect(schema.constructor.name).to.be.equal('Schema');
 
@@ -390,7 +426,7 @@ describe('unit', () => {
       expect(instance).to.exist;
       expect(open).to.have.been.calledOnce;
       expect(open).to.have.been.calledWith(
-        'mongodb://localhost/mongoose-connection-test'
+        'mongodb://127.0.0.1/mongoose-connection-test'
       );
 
       done(error, instance);
@@ -398,7 +434,7 @@ describe('unit', () => {
   });
 
   it('should connect use given url', (done) => {
-    const MONGODB_URI = 'mongodb://localhost/test';
+    const MONGODB_URI = 'mongodb://127.0.0.1/test';
 
     const mockoose = mock(mongoose);
     const open = mockoose.expects('connect').yields(null, mongoose);
@@ -417,7 +453,7 @@ describe('unit', () => {
   });
 
   it('should connect use process.env.MONGODB_URI', (done) => {
-    const MONGODB_URI = 'mongodb://localhost/test';
+    const MONGODB_URI = 'mongodb://127.0.0.1/test';
     process.env.MONGODB_URI = MONGODB_URI;
 
     const mockoose = mock(mongoose);
@@ -453,7 +489,7 @@ describe('unit', () => {
       expect(instance).to.not.exist;
       expect(open).to.have.been.calledOnce;
       expect(open).to.have.been.calledWith(
-        'mongodb://localhost/mongoose-connection-test'
+        'mongodb://127.0.0.1/mongoose-connection-test'
       );
 
       done();
@@ -752,5 +788,9 @@ describe('unit', () => {
 
       done();
     });
+  });
+
+  after(() => {
+    delete process.env.MONGODB_URI;
   });
 });

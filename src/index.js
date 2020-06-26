@@ -31,6 +31,8 @@ import {
 import { getString } from '@lykmapipo/env';
 import mongoose from 'mongoose';
 
+mongoose.Promise = global.Promise;
+
 /**
  * @name SCHEMA_OPTIONS
  * @constant SCHEMA_OPTIONS
@@ -140,7 +142,7 @@ export const isConnection = (connection) => {
  * @function isConnected
  * @name isConnected
  * @description Check value is valid connection instance and is connected
- * @param {object} connection value to check
+ * @param {object} [connection=mongoose.connection] value to check
  * @returns {boolean} whether value is connection instance and is connected
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
@@ -156,8 +158,37 @@ export const isConnection = (connection) => {
  * isConnected(null);
  * // => false
  */
-export const isConnected = (connection) => {
+export const isConnected = (connection = mongoose.connection) => {
   return isConnection(connection) && connection.readyState === 1;
+};
+
+/**
+ * @function isConnectedOrConnecting
+ * @name isConnectedOrConnecting
+ * @description Check value is valid connection instance and is
+ * connected or connecting
+ * @param {object} [connection=mongoose.connection] value to check
+ * @returns {boolean} whether value is connection instance and
+ * is connected or connecting
+ * @author lally elias <lallyelias87@gmail.com>
+ * @license MIT
+ * @since 0.3.0
+ * @version 0.1.0
+ * @static
+ * @public
+ * @example
+ *
+ * isConnectedOrConnecting('a');
+ * // => false
+ *
+ * isConnectedOrConnecting(null);
+ * // => false
+ */
+export const isConnectedOrConnecting = (connection = mongoose.connection) => {
+  return (
+    isConnection(connection) &&
+    (connection.readyState === 1 || connection.readyState === 2)
+  );
 };
 
 /**
@@ -396,7 +427,6 @@ export const createVarySubSchema = (optns, ...paths) => {
       return mergeObjects({ required: false }, field);
     }
     // ignore: not valid field definition
-
     return undefined;
   });
 
@@ -719,7 +749,7 @@ export const connect = (url, done) => {
   } catch (error) {
     /* ignore */
   }
-  DB_NAME = `mongodb://localhost/${DB_NAME}`;
+  DB_NAME = `mongodb://127.0.0.1/${DB_NAME}`;
 
   // ensure database uri from environment
   const MONGODB_URI = trim(getString('MONGODB_URI', DB_NAME));
@@ -736,7 +766,15 @@ export const connect = (url, done) => {
     useUnifiedTopology: true,
   };
 
-  // establish connection
+  // return: if connected or connecting
+  const conn = mongoose.connection;
+  if (isConnectedOrConnecting(conn)) {
+    if (isFunction(cb)) {
+      cb(null, conn);
+    }
+  }
+
+  // do: establish connection
   mongoose.connect(uri, options, cb);
 };
 
