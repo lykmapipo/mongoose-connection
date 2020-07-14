@@ -1,3 +1,9 @@
+#### 0.3.2 (2020-07-14)
+
+##### Chores
+
+* **deps:**  force latest version & audit fix ([c00eedc0](https://github.com/lykmapipo/mongoose-connection/commit/c00eedc01d618ebac89df7fd8703e5880e486156))
+
 #### 0.3.1 (2020-07-02)
 
 ##### Chores
