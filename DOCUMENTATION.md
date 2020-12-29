@@ -1,53 +1,3 @@
-#### SCHEMA_OPTIONS() 
-
-Common options to set on schema
-
-
-
-
-
-
-##### Examples
-
-```javascript
-
-import { SCHEMA_OPTIONS } from '@lykmapipo/mongoose-connection';
-//=> { timestamps: true, ... }
-```
-
-
-##### Returns
-
-
-- `Void`
-
-
-
-#### SUB_SCHEMA_OPTIONS() 
-
-Common options to set on sub doc schema
-
-
-
-
-
-
-##### Examples
-
-```javascript
-
-import { SUB_SCHEMA_OPTIONS } from '@lykmapipo/mongoose-connection';
-//=> { timestamps: false, ... }
-```
-
-
-##### Returns
-
-
-- `Void`
-
-
-
 #### enableDebug() 
 
 Enable internal debug option
@@ -740,7 +690,7 @@ disconnect((error) => { ... });
 ##### Returns
 
 
-- `object` `Error`  connection or error
+- `Void`
 
 
 

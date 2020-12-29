@@ -1,3 +1,9 @@
+#### 0.4.0 (2020-12-29)
+
+##### Refactors
+
+*  improve connect & disconnect ([4ed3c8a9](https://github.com/lykmapipo/mongoose-connection/commit/4ed3c8a91e748861c3e5009f8ee5765bf30a3ad5))
+
 #### 0.3.6 (2020-12-27)
 
 ##### Chores
