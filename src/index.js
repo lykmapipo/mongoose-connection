@@ -773,7 +773,9 @@ export const connect = (url, done) => {
   }
   // do: establish connection
   else {
-    mongoose.connect(uri, options, wrapCallback(cb));
+    mongoose.connect(uri, options, (error /* ,mongoose */) => {
+      wrapCallback(cb)(error, error ? undefined : conn);
+    });
   }
 };
 
@@ -783,7 +785,6 @@ export const connect = (url, done) => {
  * @description Close all connections
  * @param {object} [connection] valid connection or default
  * @param {Function} [done] a callback to invoke on success or failure
- * @returns {object|Error} connection or error
  * @author lally elias <lallyelias87@gmail.com>
  * @license MIT
  * @since 0.2.0
@@ -800,16 +801,19 @@ export const disconnect = (connection, done) => {
   const localConnection = isConnection(connection) ? connection : undefined;
   const cb = !isConnection(connection) ? connection : done;
 
-  // wrap callback
+  // obtain reply connection
   const replyConnection = isConnection(localConnection)
     ? localConnection
     : mongoose.connection;
 
-  // disconnect
+  // disconnect given connection
   if (localConnection) {
-    return localConnection.close(wrapCallback(cb, replyConnection));
+    localConnection.close(wrapCallback(cb, replyConnection));
   }
-  return mongoose.disconnect(wrapCallback(cb, replyConnection));
+  // disconnect all connection
+  else {
+    mongoose.disconnect(wrapCallback(cb, replyConnection));
+  }
 };
 
 /**

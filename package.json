@@ -10,7 +10,7 @@
     "build": "rollup -c",
     "lint": "eslint --fix --ext .js src/ test/ rollup.config.js",
     "pretest": "npm run lint",
-    "test": "NODE_ENV=test nyc --reporter=html --reporter=text mocha --exit --require @babel/register test/**/*.spec.js",
+    "test": "NODE_ENV=test nyc --reporter=html --reporter=text mocha --timeout=8000 --exit --require @babel/register test/**/*.spec.js",
     "test:unit": "npm run pretest && NODE_ENV=test mocha --exit --require @babel/register test/unit/**/*.spec.js",
     "test:integration": "npm run pretest && NODE_ENV=test mocha --exit --require @babel/register test/integration/**/*.spec.js",
     "coverage": "nyc report --reporter=text-lcov | coveralls",
@@ -86,7 +86,7 @@
     "lodash.template": "^4.5.0",
     "minimist": "^1.2.5",
     "mocha": "^8.2.1",
-    "mongoose": ">=5.11.8",
+    "mongoose": ">=5.11.9",
     "nyc": "^15.1.0",
     "prettier": "^2.2.1",
     "rimraf": "^3.0.2",
@@ -94,7 +94,7 @@
     "shelljs": "^0.8.4"
   },
   "peerDependencies": {
-    "mongoose": ">=5.11.8"
+    "mongoose": ">=5.11.9"
   },
   "dependencies": {
     "@lykmapipo/common": ">=0.42.5",
