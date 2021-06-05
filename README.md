@@ -43,6 +43,12 @@ drop(error => { ... });
 disconnect(error => { ... });
 ```
 
+## Environment
+```js
+MONGODB_URI=
+MONGODB_CONNECTION_WAIT_TIME=
+```
+
 ## Testing
 
 - Clone this repository

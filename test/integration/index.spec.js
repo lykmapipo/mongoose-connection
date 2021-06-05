@@ -247,6 +247,22 @@ describe('integration', () => {
       });
     });
 
+    it('should await connection from process.env.MONGODB_URI', (done) => {
+      process.env.MONGODB_URI = MONGODB_URI;
+      process.env.MONGODB_CONNECTION_WAIT_TIME = 100;
+      connect((error, instance) => {
+        expect(error).to.not.exist;
+        expect(instance).to.exist;
+        expect(isConnection(instance)).to.be.true;
+        expect(isConnected(instance)).to.be.true;
+        expect(instance.readyState).to.be.equal(1);
+        expect(instance.name).to.be.equal('test');
+        delete process.env.MONGODB_URI;
+        delete process.env.MONGODB_CONNECTION_WAIT_TIME;
+        done(error, instance);
+      });
+    });
+
     it('should not throw when connect multiple times', (done) => {
       parallel(
         [
