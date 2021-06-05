@@ -1,7 +1,7 @@
 import { isFunction, get, isNull, map, isString, isPlainObject, forEach, omit, includes, isEmpty, find, filter, toLower, last, split, kebabCase, trim, findLast, uniqBy } from 'lodash';
 import { parallel, waterfall } from 'async';
 import { sortedUniq, mergeObjects, uniq, compact, pkg, wrapCallback } from '@lykmapipo/common';
-import { getString } from '@lykmapipo/env';
+import { getString, getNumber } from '@lykmapipo/env';
 import mongoose from 'mongoose';
 
 mongoose.Promise = global.Promise;
@@ -382,7 +382,6 @@ const createSubSchema = (definition, optns) => {
  *  'sw'
  * );
  * //=> Schema { ... }
- *
  */
 const createVarySubSchema = (optns, ...paths) => {
   // ensure options
@@ -739,15 +738,36 @@ const connect = (url, done) => {
     useUnifiedTopology: true,
   };
 
+  // wrap reply callback
+  // TODO: refactor with awaited callback
+  const reply = (error, conn) => {
+    // try to await for connection
+    const waitTime = getNumber('MONGODB_CONNECTION_WAIT_TIME');
+
+    // wait before reply
+    if (waitTime) {
+      setTimeout(() => {
+        wrapCallback(cb)(error, conn);
+      }, waitTime);
+    }
+
+    // reply immediate
+    else {
+      wrapCallback(cb)(error, conn);
+    }
+  };
+
   // return: if connected or connecting
   const conn = mongoose.connection;
   if (isConnectedOrConnecting(conn)) {
-    wrapCallback(cb)(null, conn);
+    // wrapCallback(cb)(null, conn);
+    reply(null, conn);
   }
   // do: establish connection
   else {
     mongoose.connect(uri, options, (error /* ,mongoose */) => {
-      wrapCallback(cb)(error, error ? undefined : conn);
+      // wrapCallback(cb)(error, error ? undefined : conn);
+      reply(error, error ? undefined : conn);
     });
   }
 };
@@ -767,7 +787,6 @@ const connect = (url, done) => {
  * @example
  *
  * disconnect((error) => { ... });
- *
  */
 const disconnect = (connection, done) => {
   // normalize arguments
@@ -859,7 +878,6 @@ const create = (...instances /* , done */) => {
  * syncIndexes(done);
  *
  * syncIndexes(connection, done);
- *
  */
 const syncIndexes = (connection, done) => {
   // normalize arguments
@@ -940,7 +958,6 @@ const syncIndexes = (connection, done) => {
  *
  * clear(connection, done);
  * clear(connection, 'User', done);
- *
  */
 const clear = (connection, ...models /* , done */) => {
   // ensure connection
@@ -1018,7 +1035,6 @@ const clear = (connection, ...models /* , done */) => {
  * @example
  *
  * drop((error) => { ... });
- *
  */
 const drop = (connection, done) => {
   // normalize arguments

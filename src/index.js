@@ -409,7 +409,6 @@ export const createSubSchema = (definition, optns) => {
  *  'sw'
  * );
  * //=> Schema { ... }
- *
  */
 export const createVarySubSchema = (optns, ...paths) => {
   // ensure options
@@ -815,7 +814,6 @@ export const connect = (url, done) => {
  * @example
  *
  * disconnect((error) => { ... });
- *
  */
 export const disconnect = (connection, done) => {
   // normalize arguments
@@ -907,7 +905,6 @@ export const create = (...instances /* , done */) => {
  * syncIndexes(done);
  *
  * syncIndexes(connection, done);
- *
  */
 export const syncIndexes = (connection, done) => {
   // normalize arguments
@@ -988,7 +985,6 @@ export const syncIndexes = (connection, done) => {
  *
  * clear(connection, done);
  * clear(connection, 'User', done);
- *
  */
 export const clear = (connection, ...models /* , done */) => {
   // ensure connection
@@ -1066,7 +1062,6 @@ export const clear = (connection, ...models /* , done */) => {
  * @example
  *
  * drop((error) => { ... });
- *
  */
 export const drop = (connection, done) => {
   // normalize arguments
