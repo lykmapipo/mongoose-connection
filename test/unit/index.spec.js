@@ -41,7 +41,7 @@ describe('unit', () => {
   });
 
   beforeEach(() => {
-    testModelName = faker.random.uuid();
+    testModelName = faker.datatype.uuid();
     testSchema = new mongoose.Schema({ name: String });
     TestModel = mongoose.model(testModelName, testSchema);
     testQuery = TestModel.find();
@@ -296,7 +296,7 @@ describe('unit', () => {
   });
 
   it('should get registered model names', () => {
-    const modelName = faker.random.uuid();
+    const modelName = faker.datatype.uuid();
     model(modelName, new mongoose.Schema({ name: String }));
 
     expect(modelNames).to.exist;
@@ -363,7 +363,7 @@ describe('unit', () => {
   });
 
   it('should delete models', () => {
-    const modelName = faker.random.uuid();
+    const modelName = faker.datatype.uuid();
     const User = createModel({ name: { type: String } }, { modelName });
     expect(User).to.exist;
     expect(User.modelName).to.exist.and.be.equal(modelName);
@@ -386,7 +386,7 @@ describe('unit', () => {
   });
 
   it('should create model', () => {
-    const modelName = faker.random.uuid();
+    const modelName = faker.datatype.uuid();
     const User = createModel({ name: { type: String } }, { modelName });
     expect(User).to.exist;
     expect(User.modelName).to.exist.and.be.equal(modelName);
@@ -395,7 +395,7 @@ describe('unit', () => {
   });
 
   it('should create model with plugins', () => {
-    const modelName = faker.random.uuid();
+    const modelName = faker.datatype.uuid();
     const User = createModel(
       { name: { type: String } },
       { modelName },

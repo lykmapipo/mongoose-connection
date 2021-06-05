@@ -1,3 +1,13 @@
+#### 0.5.0 (2021-06-05)
+
+##### Chores
+
+* **deps:**  force latest version & audit fix ([e7be7d9a](https://github.com/lykmapipo/mongoose-connection/commit/e7be7d9ab07d30c70ad3d4d0fd6bf2078d8ad794))
+
+##### New Features
+
+*  allow to wait connection for n ms ([beeabd8c](https://github.com/lykmapipo/mongoose-connection/commit/beeabd8cc6e892cf850d24a1df06e885051c9a8c))
+
 #### 0.4.0 (2020-12-29)
 
 ##### Refactors
