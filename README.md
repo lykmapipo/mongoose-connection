@@ -1,6 +1,6 @@
 # mongoose-connection
 
-[![Build Status](https://travis-ci.org/lykmapipo/mongoose-connection.svg?branch=master)](https://travis-ci.org/lykmapipo/mongoose-connection)
+[![Build Status](https://app.travis-ci.com/lykmapipo/mongoose-connection.svg?branch=master)](https://app.travis-ci.com/lykmapipo/mongoose-connection)
 [![Dependencies Status](https://david-dm.org/lykmapipo/mongoose-connection.svg)](https://david-dm.org/lykmapipo/mongoose-connection)
 [![Coverage Status](https://coveralls.io/repos/github/lykmapipo/mongoose-connection/badge.svg?branch=master)](https://coveralls.io/github/lykmapipo/mongoose-connection?branch=master)
 [![GitHub License](https://img.shields.io/github/license/lykmapipo/mongoose-connection)](https://github.com/lykmapipo/mongoose-connection/blob/develop/LICENSE)
