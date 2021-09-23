@@ -758,12 +758,7 @@ export const connect = (url, done) => {
   const cb = isFunction(url) ? url : done;
 
   // connection options
-  const options = {
-    useNewUrlParser: true,
-    useFindAndModify: false,
-    useCreateIndex: true,
-    useUnifiedTopology: true,
-  };
+  const options = {};
 
   // wrap reply callback
   // TODO: refactor with awaited callback
