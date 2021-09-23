@@ -1,3 +1,14 @@
+#### 0.5.1 (2021-09-23)
+
+##### Chores
+
+* **deps:**  force latest version & audit fix ([98d4d8a2](https://github.com/lykmapipo/mongoose-connection/commit/98d4d8a257f71f19a70c2f0b8de7dbf6dddf12af))
+*  refactor and updates ([2549396d](https://github.com/lykmapipo/mongoose-connection/commit/2549396d7e5f998911b0ef893cd2cf700e861c6a))
+
+##### Documentation Changes
+
+* **readme:**  update travis badge source ([9da7428e](https://github.com/lykmapipo/mongoose-connection/commit/9da7428e34915307bfd38038a9b70ecbb8f861f4))
+
 #### 0.5.0 (2021-06-05)
 
 ##### Chores
