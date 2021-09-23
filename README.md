@@ -22,7 +22,7 @@ Re-usable helpers for mongoose connection.
 ## Installation
 
 ```sh
-npm install @lykmapipo/mongoose-connection --save
+npm install mongoose @lykmapipo/mongoose-connection --save
 ```
 
 ## Usage
