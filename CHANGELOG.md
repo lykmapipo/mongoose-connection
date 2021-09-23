@@ -1,3 +1,10 @@
+#### 0.5.2 (2021-09-23)
+
+##### Chores
+
+* **release:**  compile latest source ([81430ce0](https://github.com/lykmapipo/mongoose-connection/commit/81430ce0773dff0cbe66770090a2cd190330b0fa))
+* **deps:**  force latest version & audit fix ([2a71f241](https://github.com/lykmapipo/mongoose-connection/commit/2a71f2413a2bbe418af9418a16e22499bf976ce0))
+
 #### 0.5.1 (2021-09-23)
 
 ##### Chores
