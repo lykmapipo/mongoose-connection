@@ -104,7 +104,7 @@
     "@lykmapipo/env": ">=0.17.39",
     "async": ">=3.2.4",
     "lodash": ">=4.17.21",
-    "mongoose": ">=6.4.5"
+    "mongoose": ">=6.4.6"
   },
   "engines": {
     "node": ">=8.11.1",
